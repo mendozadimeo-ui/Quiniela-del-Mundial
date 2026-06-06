@@ -187,6 +187,9 @@ export default function App(){
   const [loading,setLoading]=useState(true);
   const [toast,setToast]=useState(null);
   const [standings,setStandings]=useState([]);
+  const [allPicksData,setAllPicksData]=useState(null);
+  const [allPicksLoading,setAllPicksLoading]=useState(false);
+  const [expandedMatch,setExpandedMatch]=useState(null);
   const [showPassFor,setShowPassFor]=useState(null);
   const [confirmDelete,setConfirmDelete]=useState(null);
   const [now,setNow]=useState(new Date());
@@ -269,6 +272,19 @@ export default function App(){
     setConfirmDelete(null);showToast(`🗑️ ${player.name} eliminado`,"#7f1d1d");
   }
 
+  async function loadAllPicks(){
+    if(allPicksData)return;
+    setAllPicksLoading(true);
+    const rows={};
+    for(const p of players){
+      const picks=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});
+      const special=p.id===me?.id?mySpecial:(await loadData(`special_${p.id}`)||{});
+      rows[p.id]={name:p.name,picks,special};
+    }
+    setAllPicksData(rows);
+    setAllPicksLoading(false);
+  }
+
   useEffect(()=>{
     if(screen!=="standings")return;
     async function compute(){
@@ -336,6 +352,7 @@ export default function App(){
         <div style={{display:"flex",flexDirection:"column",gap:10,width:"100%",maxWidth:300,marginBottom:20}}>
           <button style={btnGold} onClick={()=>setScreen("join")}>🙋 Unirme / Ingresar</button>
           <button style={btnOutline} onClick={()=>setScreen("standings")}>🏆 Tabla de participantes</button>
+          <button style={btnOutline} onClick={()=>{loadAllPicks();setScreen("allPicks");}}>🎯 Ver pronósticos de todos</button>
           <button style={btnOutline} onClick={()=>setScreen("groupTable")}>📊 Tabla de grupos</button>
         </div>
         <div style={{background:`linear-gradient(135deg,${C.creamFaint},rgba(74,94,58,0.06))`,border:`1px solid ${C.border}`,borderRadius:14,padding:"14px 16px",maxWidth:300,width:"100%",marginBottom:16}}>
@@ -552,6 +569,81 @@ export default function App(){
     </div>
   );
 
+  // ── ALL PICKS SCREEN ──────────────────────────────────────────────────────
+  if(screen==="allPicks"){
+    const rounds=["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
+    return(
+      <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
+        <div style={topBar}>
+          <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
+          <p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,letterSpacing:2}}>🎯 PRONÓSTICOS</p>
+          <span/>
+        </div>
+        <div style={tabsRow}>
+          {rounds.map(r=>(<button key={r} style={r===activeRound?tabOn:tabOff} onClick={()=>setActiveRound(r)}>{r}</button>))}
+        </div>
+        {activeRound==="Grupos"&&<div style={groupTabsRow}>{Object.keys(GROUPS).map(g=>(<button key={g} style={g===activeGroup?grpOn:grpOff} onClick={()=>setActiveGroup(g)}>Grupo {g}</button>))}</div>}
+        {activeRound==="Especiales"&&(
+          <div style={{padding:"10px"}}>
+            <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:14,marginBottom:12,letterSpacing:2}}>🏆 CAMPEÓN · 👟 GOLEADOR</p>
+            {allPicksLoading&&<p style={{color:C.creamDim,textAlign:"center",padding:20}}>Cargando...</p>}
+            {!allPicksLoading&&allPicksData&&(
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {players.map(p=>{
+                  const pd=allPicksData[p.id];
+                  if(!pd)return null;
+                  const champOk=adminSpecial?.champion&&pd.special?.champion===adminSpecial.champion;
+                  const scorOk=adminSpecial?.scorer&&pd.special?.scorer===adminSpecial.scorer;
+                  return(
+                    <div key={p.id} style={{background:"rgba(92,26,39,0.15)",border:"1px solid rgba(201,168,76,0.1)",borderRadius:12,padding:"12px"}}>
+                      <p style={{color:C.gold,fontWeight:700,fontSize:13,marginBottom:8}}>{p.name}</p>
+                      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <span style={{color:C.creamDim,fontSize:12}}>🏆 Campeón:</span>
+                          <span style={{fontSize:12,fontWeight:700,color:champOk?"#22c55e":pd.special?.champion?C.cream:"rgba(245,236,215,0.3)"}}>{pd.special?.champion||"—"}{champOk?" ✨":""}</span>
+                        </div>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <span style={{color:C.creamDim,fontSize:12}}>👟 Goleador:</span>
+                          <span style={{fontSize:12,fontWeight:700,color:scorOk?"#22c55e":pd.special?.scorer?C.cream:"rgba(245,236,215,0.3)"}}>{pd.special?.scorer||"—"}{scorOk?" ✨":""}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        {activeRound!=="Especiales"&&(
+          <div style={{padding:"8px 10px",display:"flex",flexDirection:"column",gap:10}}>
+            {allPicksLoading&&<p style={{color:C.creamDim,textAlign:"center",padding:20}}>Cargando pronósticos...</p>}
+            {!allPicksLoading&&matchesInRound.map(match=>{
+              const result=results[match.id];
+              const kickoff=MD[match.id];
+              return(
+                <div key={match.id} style={{...matchCard,padding:"14px 12px"}}>
+                  {kickoff&&<p style={{fontSize:10,color:"rgba(245,236,215,0.3)",marginBottom:6}}>{fmtDate(kickoff)}</p>}
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:6,marginBottom:10}}>
+                    <div style={{display:"flex",flexDirection:"column",gap:3,flex:1}}><Flag name={match.home}/><span style={{fontSize:11,color:C.cream,fontWeight:700}}>{match.home}</span></div>
+                    <div style={{textAlign:"center"}}>
+                      {result&&result.h!==""
+                        ?<span style={{fontFamily:"'Cinzel',serif",fontSize:20,color:C.gold,fontWeight:900}}>{result.h} - {result.a}</span>
+                        :<span style={{color:"rgba(245,236,215,0.3)",fontSize:12}}>vs</span>
+                      }
+                    </div>
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3,flex:1,textAlign:"right"}}><Flag name={match.away}/><span style={{fontSize:11,color:C.cream,fontWeight:700}}>{match.away}</span></div>
+                  </div>
+                  <PicksReveal matchId={match.id} players={players} allPicksData={allPicksData} loading={false} result={result}/>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // ── ADMIN ─────────────────────────────────────────────────────────────────
   if(screen==="admin"){
     const rounds=["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
@@ -682,6 +774,35 @@ export default function App(){
     );
   }
   return null;
+}
+
+function PicksReveal({matchId,players,allPicksData,loading,result}){
+  if(loading)return(<p style={{color:"rgba(245,236,215,0.3)",fontSize:11,textAlign:"center",padding:"8px 0"}}>Cargando...</p>);
+  if(!allPicksData)return null;
+  const entries=players.map(p=>{
+    const pd=allPicksData[p.id];
+    const pick=pd?.picks?.[matchId]||{h:"",a:""};
+    const pts=calcMatchPoints(pick,result);
+    return{name:p.name,pick,pts,hasPick:pick.h!==""||pick.a!==""};
+  }).filter(e=>e.hasPick);
+  if(entries.length===0)return(<p style={{color:"rgba(245,236,215,0.2)",fontSize:11,textAlign:"center",padding:"6px 0"}}>Nadie ha ingresado pronóstico aún</p>);
+  return(
+    <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:4}}>
+      <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Pronósticos del grupo</p>
+      {entries.map((e,i)=>{
+        const hasResult=result&&result.h!=="";
+        const bg=!hasResult?"rgba(255,255,255,0.03)":e.pts===3?"rgba(74,94,58,0.25)":e.pts===2?"rgba(122,75,0,0.25)":"rgba(92,26,39,0.25)";
+        const border=!hasResult?"rgba(255,255,255,0.06)":e.pts===3?"rgba(74,94,58,0.4)":e.pts===2?"rgba(201,168,76,0.3)":"rgba(92,26,39,0.4)";
+        return(
+          <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 10px",borderRadius:8,background:bg,border:`1px solid ${border}`}}>
+            <span style={{fontSize:12,color:"#F5ECD7",fontWeight:600,flex:1}}>{e.name}</span>
+            <span style={{fontFamily:"'Cinzel',serif",fontSize:14,color:e.pts===3?"#22c55e":e.pts===2?"#C9A84C":"#F5ECD7",fontWeight:700,minWidth:40,textAlign:"center"}}>{e.pick.h!==""?`${e.pick.h} - ${e.pick.a}`:"—"}</span>
+            {hasResult&&<span style={{fontSize:11,marginLeft:8,color:e.pts===3?"#22c55e":e.pts===2?"#C9A84C":"rgba(245,236,215,0.4)"}}>{e.pts===3?"✨":e.pts===2?"✅":"❌"} {e.pts}pts</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function Toast({data}){return(<div style={{position:"fixed",top:16,left:"50%",transform:"translateX(-50%)",background:data.color||"#4A5E3A",color:"#F5ECD7",padding:"10px 22px",borderRadius:20,fontSize:13,fontWeight:700,zIndex:9999,whiteSpace:"nowrap",boxShadow:"0 4px 20px rgba(0,0,0,0.6)",animation:"fadeUp 0.3s ease",border:"1px solid rgba(201,168,76,0.3)"}}>{data.msg}</div>);}
