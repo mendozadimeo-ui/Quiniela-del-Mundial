@@ -302,6 +302,11 @@ export default function App(){
   const [allPicksLoading,setAllPicksLoading]=useState(false);
   const [expandedMatch,setExpandedMatch]=useState(null);
   const [selectingCountry,setSelectingCountry]=useState(false);
+  const [chartData,setChartData]=useState(null);
+  const [chartLoaded,setChartLoaded]=useState(false);
+  const [rival,setRival]=useState(null);
+  const [h2hData,setH2hData]=useState(null);
+  const [h2hLoading,setH2hLoading]=useState(false);
   const [chatMessages,setChatMessages]=useState([]);
   const [chatInput,setChatInput]=useState("");
   const [chatSending,setChatSending]=useState(false);
@@ -456,6 +461,55 @@ export default function App(){
     setAllPicksData(rows);
     setAllPicksLoading(false);
   }
+
+  // Chart data loader
+  useEffect(()=>{
+    if(screen!=="chart"||chartLoaded)return;
+    async function build(){
+      const played=Object.entries(results).filter(([,r])=>r&&r.h!=="").map(([id,r])=>({id,r}));
+      const COLORS=["#C9A84C","#22c55e","#3b82f6","#ec4899","#f97316","#a78bfa","#34d399","#fb923c","#60a5fa","#f472b6","#4ade80","#fbbf24","#818cf8","#2dd4bf","#e879f9","#facc15","#94a3b8","#f87171","#86efac","#7dd3fc"];
+      const allPicks={};
+      for(const p of players){allPicks[p.id]=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});}
+      const series=players.map((p,pi)=>{
+        let cum=0;
+        const points=played.map(({id,r})=>{
+          const pick=allPicks[p.id]?.[id]||{h:"",a:""};
+          cum+=calcMatchPoints(pick,r);
+          return cum;
+        });
+        return{name:p.name,points,color:COLORS[pi%COLORS.length],id:p.id};
+      });
+      setChartData(series);setChartLoaded(true);
+    }
+    build();
+  },[screen,chartLoaded]);
+
+  // H2H loader
+  useEffect(()=>{
+    if(screen!=="h2h"||!rival)return;
+    async function compute(){
+      setH2hLoading(true);
+      const rivalPicks=await loadData(`picks_${rival.id}`)||{};
+      const rivalSpecial=await loadData(`special_${rival.id}`)||{};
+      const played=Object.entries(results).filter(([,r])=>r&&r.h!=="");
+      let myPts=0,rivPts=0,myExact=0,rivExact=0,myWins=0,rivWins=0,draws=0,myPlayed=0,rivPlayed=0;
+      let myBestStreak=0,rivBestStreak=0,myCur=0,rivCur=0;
+      played.forEach(([mid,result])=>{
+        const mp=myPicks[mid]||{h:"",a:""};
+        const rp=rivalPicks[mid]||{h:"",a:""};
+        const mpts=calcMatchPoints(mp,result);
+        const rpts=calcMatchPoints(rp,result);
+        if(mp.h!==""){myPts+=mpts;myPlayed++;if(mpts===3){myExact++;myCur++;}else{if(mpts>0)myCur++;else myCur=0;}if(myCur>myBestStreak)myBestStreak=myCur;}
+        if(rp.h!==""){rivPts+=rpts;rivPlayed++;if(rpts===3){rivExact++;rivCur++;}else{if(rpts>0)rivCur++;else rivCur=0;}if(rivCur>rivBestStreak)rivBestStreak=rivCur;}
+        if(mp.h!==""&&rp.h!==""){if(mpts>rpts)myWins++;else if(rpts>mpts)rivWins++;else draws++;}
+      });
+      const mySpPts=calcSpecialPoints(mySpecial,adminSpecial);
+      const rivSpPts=calcSpecialPoints(rivalSpecial,adminSpecial);
+      setH2hData({myPts:myPts+mySpPts,rivPts:rivPts+rivSpPts,myExact,rivExact,myWins,rivWins,draws,myPlayed,rivPlayed,myBestStreak,rivBestStreak,myStreak:myCur,rivStreak:rivCur});
+      setH2hLoading(false);
+    }
+    compute();
+  },[screen,rival]);
 
   useEffect(()=>{
     if(screen!=="standings")return;
@@ -861,38 +915,7 @@ export default function App(){
   // ── CHART SCREEN ──────────────────────────────────────────────────────────
   if(screen==="chart"){
     const COLORS=["#C9A84C","#22c55e","#3b82f6","#ec4899","#f97316","#a78bfa","#34d399","#fb923c","#60a5fa","#f472b6","#4ade80","#fbbf24","#818cf8","#2dd4bf","#e879f9","#facc15","#94a3b8","#f87171","#86efac","#7dd3fc"];
-
-    // Get all played matches in order
-    const played=Object.entries(results)
-      .filter(([,r])=>r&&r.h!=="")
-      .map(([id,r])=>({id,r}));
-
-    // For each player compute cumulative points after each match
-    const [chartData,setChartData]=React.useState(null);
-    const [chartLoaded,setChartLoaded]=React.useState(false);
-
-    React.useEffect(()=>{
-      if(chartLoaded)return;
-      async function build(){
-        const allPicks={};
-        for(const p of players){
-          allPicks[p.id]=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});
-        }
-        // Build cumulative points per match
-        const series=players.map((p,pi)=>{
-          let cum=0;
-          const points=played.map(({id,r})=>{
-            const pick=allPicks[p.id]?.[id]||{h:"",a:""};
-            cum+=calcMatchPoints(pick,r);
-            return cum;
-          });
-          return{name:p.name,points,color:COLORS[pi%COLORS.length],id:p.id};
-        });
-        setChartData(series);
-        setChartLoaded(true);
-      }
-      build();
-    },[chartLoaded]);
+    const played=Object.entries(results).filter(([,r])=>r&&r.h!=="").map(([id,r])=>({id,r}));
 
     // SVG chart dimensions
     const W=320,H=200,PAD={t:10,r:10,b:30,l:35};
@@ -969,36 +992,8 @@ export default function App(){
   // ── HEAD TO HEAD ───────────────────────────────────────────────────────────
   if(screen==="h2h"&&me){
     const others=players.filter(p=>p.id!==me.id);
-    const [rival,setRival]=React.useState(others[0]||null);
-    const [h2hData,setH2hData]=React.useState(null);
-    const [h2hLoading,setH2hLoading]=React.useState(false);
-
-    React.useEffect(()=>{
-      if(!rival)return;
-      async function compute(){
-        setH2hLoading(true);
-        const rivalPicks=await loadData(`picks_${rival.id}`)||{};
-        const rivalSpecial=await loadData(`special_${rival.id}`)||{};
-        const played=Object.entries(results).filter(([,r])=>r&&r.h!=="");
-        let myPts=0,rivPts=0,myExact=0,rivExact=0,myWins=0,rivWins=0,draws=0,myPlayed=0,rivPlayed=0;
-        let myStreak=0,rivStreak=0,myBestStreak=0,rivBestStreak=0,myCur=0,rivCur=0;
-        played.forEach(([mid,result])=>{
-          const mp=myPicks[mid]||{h:"",a:""};
-          const rp=rivalPicks[mid]||{h:"",a:""};
-          const mpts=calcMatchPoints(mp,result);
-          const rpts=calcMatchPoints(rp,result);
-          if(mp.h!==""){myPts+=mpts;myPlayed++;if(mpts===3){myExact++;myCur++;}else{if(mpts>0)myCur++;else myCur=0;}if(myCur>myBestStreak)myBestStreak=myCur;}
-          if(rp.h!==""){rivPts+=rpts;rivPlayed++;if(rpts===3){rivExact++;rivCur++;}else{if(rpts>0)rivCur++;else rivCur=0;}if(rivCur>rivBestStreak)rivBestStreak=rivCur;}
-          if(mp.h!==""&&rp.h!==""){if(mpts>rpts)myWins++;else if(rpts>mpts)rivWins++;else draws++;}
-        });
-        myStreak=myCur;rivStreak=rivCur;
-        const mySpPts=calcSpecialPoints(mySpecial,adminSpecial);
-        const rivSpPts=calcSpecialPoints(rivalSpecial,adminSpecial);
-        setH2hData({myPts:myPts+mySpPts,rivPts:rivPts+rivSpPts,myExact,rivExact,myWins,rivWins,draws,myPlayed,rivPlayed,myStreak,rivStreak,myBestStreak,rivBestStreak});
-        setH2hLoading(false);
-      }
-      compute();
-    },[rival]);
+    // Initialize rival if not set
+    if(!rival&&others.length>0)setRival(others[0]);
 
     const Bar=({myVal,rivVal,label})=>{
       const total=myVal+rivVal||1;
@@ -1032,7 +1027,7 @@ export default function App(){
             <p style={{color:"rgba(245,236,215,0.4)",fontSize:10,letterSpacing:2,marginBottom:8}}>ELIGE TU RIVAL</p>
             <select style={{...inputStyle,margin:0}} value={rival?.id||""} onChange={e=>{
               const p=players.find(x=>x.id===e.target.value);
-              setRival(p||null);setH2hData(null);
+              setRival(p||null);setH2hData(null);setH2hLoading(false);
             }}>
               {others.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
