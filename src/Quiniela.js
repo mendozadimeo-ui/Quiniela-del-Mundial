@@ -562,6 +562,11 @@ export default function App(){
             </div>
           ))}
         </div>
+        {/* SECCIÓN FUNNY - APODOS Y LOGROS */}
+        {players.length>=2&&(
+          <HomeApodos players={players} results={results} adminSpecial={adminSpecial} me={me} myPicks={myPicks} mySpecial={mySpecial} loadData={loadData}/>
+        )}
+
         <button style={{...btnOutline,fontSize:11,opacity:0.3,maxWidth:200}} onClick={()=>setScreen("adminLogin")}>⚙️ Acceso admin</button>
       </div>
     </div>
@@ -1371,6 +1376,115 @@ function PicksReveal({matchId,players,allPicksData,loading,result}){
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function HomeApodos({players,results,adminSpecial,me,myPicks,mySpecial,loadData}){
+  const [data,setData]=React.useState(null);
+
+  React.useEffect(()=>{
+    async function compute(){
+      const rows=await Promise.all(players.map(async p=>{
+        const picks=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});
+        const special=p.id===me?.id?mySpecial:(await loadData(`special_${p.id}`)||{});
+        let pts=0,exact=0,goalsHit=0;
+        const ALL_M=[...Object.entries({A:["México","Sudáfrica","Corea del Sur","Chequia"],B:["Canadá","Bosnia y Herzegovina","Catar","Suiza"],C:["Brasil","Marruecos","Haití","Escocia"],D:["EE.UU.","Paraguay","Australia","Turquía"],E:["Alemania","Curazao","Costa de Marfil","Ecuador"],F:["Países Bajos","Japón","Suecia","Túnez"],G:["Bélgica","Egipto","Irán","Nueva Zelanda"],H:["España","Cabo Verde","Arabia Saudita","Uruguay"],I:["Francia","Senegal","Irak","Noruega"],J:["Argentina","Argelia","Austria","Jordania"],K:["Portugal","R.D. del Congo","Uzbekistán","Colombia"],L:["Inglaterra","Croacia","Ghana","Panamá"]}).flatMap(([g,t])=>[`${g}1`,`${g}2`,`${g}3`,`${g}4`,`${g}5`,`${g}6`]),
+          "R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12",
+          "QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","SF_1","SF_2","SF_3","THIRD","FINAL"
+        ];
+        Object.entries(results).forEach(([mid,result])=>{
+          if(!result||result.h==="")return;
+          const pick=picks[mid]||{h:"",a:""};
+          if(pick.h==="")return;
+          const rH=parseInt(result.h),rA=parseInt(result.a);
+          const pH=parseInt(pick.h),pA=parseInt(pick.a);
+          if(pH===rH&&pA===rA){pts+=3;exact++;}
+          else{
+            const rW=rH>rA?"H":rH<rA?"A":"D",pW=pH>pA?"H":pH<pA?"A":"D";
+            if(rW===pW)pts+=2;
+          }
+          // goals hit = times they got the exact scoreline goals right (home+away)
+          if(pH===rH||pA===rA)goalsHit++;
+        });
+        if(adminSpecial){
+          if(adminSpecial.champion&&special?.champion===adminSpecial.champion)pts+=10;
+          if(adminSpecial.scorer&&special?.scorer===adminSpecial.scorer)pts+=8;
+        }
+        return{...p,pts,exact,goalsHit};
+      }));
+      setData(rows.sort((a,b)=>b.pts-a.pts));
+    }
+    compute();
+  },[players,results]);
+
+  if(!data||data.length<2)return null;
+
+  const sorted=[...data].sort((a,b)=>b.pts-a.pts);
+  const byExact=[...data].sort((a,b)=>b.exact-a.exact);
+  const byGoals=[...data].sort((a,b)=>b.goalsHit-a.goalsHit);
+
+  const top1=sorted[0];
+  const top2=sorted[1];
+  const top3=sorted[2];
+  const last=sorted[sorted.length-1];
+  const secondLast=sorted.length>1?sorted[sorted.length-2]:null;
+  const mostExact=byExact[0];
+  const mostGoals=byGoals[0];
+
+  const Card=({emoji,title,name,pts,color,bg,border,subtitle})=>(
+    <div style={{background:bg||"rgba(92,26,39,0.2)",border:`1px solid ${border||"rgba(201,168,76,0.2)"}`,borderRadius:12,padding:"10px 12px",marginBottom:6}}>
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <span style={{fontSize:22,minWidth:28}}>{emoji}</span>
+        <div style={{flex:1}}>
+          <p style={{fontSize:10,color:color||"rgba(245,236,215,0.4)",letterSpacing:1,textTransform:"uppercase",marginBottom:2}}>{title}</p>
+          <p style={{fontSize:14,fontWeight:700,color:"#F5ECD7"}}>{name}{name===me?.name&&<span style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginLeft:4}}>← tú</span>}</p>
+          {subtitle&&<p style={{fontSize:10,color:"rgba(245,236,215,0.4)",marginTop:1}}>{subtitle}</p>}
+        </div>
+        <span style={{fontFamily:"'Cinzel',serif",fontSize:18,color:color||"#C9A84C",fontWeight:900}}>{pts}pts</span>
+      </div>
+    </div>
+  );
+
+  return(
+    <div style={{width:"100%",maxWidth:300,marginTop:8}}>
+      <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:4,color:"rgba(201,168,76,0.5)",textAlign:"center",marginBottom:10}}>⚡ EL RANCHO ⚡</p>
+
+      {/* TOP 3 */}
+      {top1&&<Card emoji="🚌" title="Montado en la Cima" name={top1.name} pts={top1.pts}
+        color="#C9A84C" bg="linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.05))"
+        border="rgba(201,168,76,0.4)" subtitle={`${top1.exact} exactos · ${top1.goalsHit} goles`}/>}
+      {top2&&<Card emoji="👀" title="Tiene el Palo Parao" name={top2.name} pts={top2.pts}
+        color="#9ca3af" bg="rgba(156,163,175,0.06)" border="rgba(156,163,175,0.2)"
+        subtitle={`${top2.exact} exactos`}/>}
+      {top3&&sorted.length>=3&&<Card emoji="😎" title="Anda Bien Fodongo" name={top3.name} pts={top3.pts}
+        color="#cd7c2f" bg="rgba(205,124,47,0.06)" border="rgba(205,124,47,0.2)"
+        subtitle={`${top3.exact} exactos`}/>}
+
+      <div style={{height:1,background:"rgba(255,255,255,0.05)",margin:"8px 0"}}/>
+
+      {/* PEORES */}
+      {secondLast&&sorted.length>2&&secondLast.id!==top3?.id&&<Card emoji="🔌" title="En la Cama del Perro"
+        name={secondLast.name} pts={secondLast.pts}
+        color="#ef4444" bg="rgba(239,68,68,0.05)" border="rgba(239,68,68,0.15)"
+        subtitle="Casi en el fondo"/>}
+      {last&&last.id!==top1?.id&&<Card emoji="🧳" title="Más Perdido que el Hijo de Lindbergh"
+        name={last.name} pts={last.pts}
+        color="#dc2626" bg="rgba(220,38,38,0.08)" border="rgba(220,38,38,0.25)"
+        subtitle="Último lugar 💀"/>}
+
+      <div style={{height:1,background:"rgba(255,255,255,0.05)",margin:"8px 0"}}/>
+
+      {/* LOGROS ESPECIALES */}
+      <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:"rgba(201,168,76,0.4)",textAlign:"center",marginBottom:8}}>🏆 LOGROS</p>
+      {mostExact&&mostExact.exact>0&&<Card emoji="📻" title="Tiene Bemba'e Radio"
+        name={mostExact.name} pts={mostExact.pts}
+        color="#a78bfa" bg="rgba(167,139,250,0.06)" border="rgba(167,139,250,0.2)"
+        subtitle={`${mostExact.exact} marcadores exactos`}/>}
+      {mostGoals&&mostGoals.goalsHit>0&&<Card emoji="🧙" title="El Brujo"
+        name={mostGoals.name} pts={mostGoals.pts}
+        color="#34d399" bg="rgba(52,211,153,0.06)" border="rgba(52,211,153,0.2)"
+        subtitle={`${mostGoals.goalsHit} goles acertados`}/>}
     </div>
   );
 }
