@@ -161,6 +161,75 @@ const GROUPS={
 };
 const ALL_TEAMS=[...new Set(Object.values(GROUPS).flat())].sort();
 const FLAGS={"México":"🇲🇽","Corea del Sur":"🇰🇷","Sudáfrica":"🇿🇦","Chequia":"🇨🇿","Canadá":"🇨🇦","Suiza":"🇨🇭","Catar":"🇶🇦","Bosnia y Herzegovina":"🇧🇦","Brasil":"🇧🇷","Marruecos":"🇲🇦","Escocia":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Haití":"🇭🇹","EE.UU.":"🇺🇸","Australia":"🇦🇺","Paraguay":"🇵🇾","Turquía":"🇹🇷","Alemania":"🇩🇪","Ecuador":"🇪🇨","Costa de Marfil":"🇨🇮","Curazao":"🇨🇼","Países Bajos":"🇳🇱","Japón":"🇯🇵","Túnez":"🇹🇳","Suecia":"🇸🇪","Bélgica":"🇧🇪","Irán":"🇮🇷","Egipto":"🇪🇬","Nueva Zelanda":"🇳🇿","España":"🇪🇸","Uruguay":"🇺🇾","Arabia Saudita":"🇸🇦","Cabo Verde":"🇨🇻","Francia":"🇫🇷","Senegal":"🇸🇳","Noruega":"🇳🇴","Irak":"🇮🇶","Argentina":"🇦🇷","Austria":"🇦🇹","Argelia":"🇩🇿","Jordania":"🇯🇴","Portugal":"🇵🇹","Colombia":"🇨🇴","Uzbekistán":"🇺🇿","R.D. del Congo":"🇨🇩","Inglaterra":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croacia":"🇭🇷","Panamá":"🇵🇦","Ghana":"🇬🇭"};
+// Colores de camisetas [color principal, color secundario, color número]
+const JERSEYS={
+  "México":["#006847","#FFFFFF","#FFFFFF"],
+  "Sudáfrica":["#007A4D","#FFB81C","#FFFFFF"],
+  "Corea del Sur":["#C8102E","#FFFFFF","#FFFFFF"],
+  "Chequia":["#D7141A","#FFFFFF","#FFFFFF"],
+  "Canadá":["#FF0000","#FFFFFF","#FFFFFF"],
+  "Bosnia y Herzegovina":["#002395","#FFD700","#FFFFFF"],
+  "Catar":["#8D1B3D","#FFFFFF","#FFFFFF"],
+  "Suiza":["#FF0000","#FFFFFF","#FFFFFF"],
+  "Brasil":["#009C3B","#FFD700","#FFFFFF"],
+  "Marruecos":["#C1272D","#006233","#FFFFFF"],
+  "Haití":["#00209F","#D21034","#FFFFFF"],
+  "Escocia":["#003F87","#FFFFFF","#FFFFFF"],
+  "EE.UU.":["#002868","#BF0A30","#FFFFFF"],
+  "Paraguay":["#D52B1E","#FFFFFF","#0038A8"],
+  "Australia":["#00843D","#FFD700","#FFFFFF"],
+  "Turquía":["#E30A17","#FFFFFF","#FFFFFF"],
+  "Alemania":["#FFFFFF","#000000","#000000"],
+  "Curazao":["#002B7F","#F9E814","#FFFFFF"],
+  "Costa de Marfil":["#FF8200","#FFFFFF","#009A44"],
+  "Ecuador":["#FFD100","#003DA5","#FFFFFF"],
+  "Países Bajos":["#FF6600","#FFFFFF","#FFFFFF"],
+  "Japón":["#BC002D","#FFFFFF","#FFFFFF"],
+  "Suecia":["#006AA7","#FECC02","#FFFFFF"],
+  "Túnez":["#E70013","#FFFFFF","#FFFFFF"],
+  "Bélgica":["#000000","#FFD700","#FF0000"],
+  "Egipto":["#CE1126","#FFFFFF","#FFFFFF"],
+  "Irán":["#239F40","#FFFFFF","#FFFFFF"],
+  "Nueva Zelanda":["#FFFFFF","#000000","#000000"],
+  "España":["#AA151B","#F1BF00","#FFFFFF"],
+  "Cabo Verde":["#003893","#CF2027","#FFFFFF"],
+  "Arabia Saudita":["#006C35","#FFFFFF","#FFFFFF"],
+  "Uruguay":["#5EB6E4","#FFFFFF","#FFFFFF"],
+  "Francia":["#002395","#FFFFFF","#FFFFFF"],
+  "Senegal":["#00853F","#FDEF42","#FFFFFF"],
+  "Irak":["#000000","#FFFFFF","#CE1126"],
+  "Noruega":["#EF2B2D","#FFFFFF","#002868"],
+  "Argentina":["#74ACDF","#FFFFFF","#FFFFFF"],
+  "Argelia":["#006233","#FFFFFF","#FFFFFF"],
+  "Austria":["#ED2939","#FFFFFF","#FFFFFF"],
+  "Jordania":["#007A3D","#FFFFFF","#CE1126"],
+  "Portugal":["#006600","#FF0000","#FFFFFF"],
+  "Colombia":["#FCD116","#003087","#CE1126"],
+  "Uzbekistán":["#1EB53A","#FFFFFF","#CE2028"],
+  "R.D. del Congo":["#007FFF","#F7D618","#CE1126"],
+  "Inglaterra":["#FFFFFF","#CF081F","#CF081F"],
+  "Croacia":["#FF0000","#FFFFFF","#FFFFFF"],
+  "Ghana":["#006B3F","#FCD116","#FFFFFF"],
+  "Panamá":["#DA121A","#FFFFFF","#003580"],
+};
+
+function Jersey({country, size=36}){
+  const colors=JERSEYS[country]||["#888","#fff","#fff"];
+  const [main,sec,num]=colors;
+  const s=size;
+  return(
+    <svg width={s} height={s*1.1} viewBox="0 0 36 40" style={{flexShrink:0}}>
+      {/* Cuerpo */}
+      <path d="M8,10 L4,16 L9,18 L9,36 L27,36 L27,18 L32,16 L28,10 L23,13 C22,8 14,8 13,13 Z" fill={main} stroke={sec} strokeWidth="1"/>
+      {/* Cuello */}
+      <path d="M13,13 C14,9 22,9 23,13" fill="none" stroke={sec} strokeWidth="1.5"/>
+      {/* Número */}
+      <text x="18" y="27" textAnchor="middle" fill={num} fontSize="9" fontWeight="bold" fontFamily="Arial">{FLAGS[country]||"🏳️"}</text>
+    </svg>
+  );
+}
+
+const TOP_SCORERS=[
 const TOP_SCORERS=["Kylian Mbappé (Francia)","Erling Haaland (Noruega)","Vinicius Jr. (Brasil)","Lionel Messi (Argentina)","Cristiano Ronaldo (Portugal)","Harry Kane (Inglaterra)","Pedri (España)","Lamine Yamal (España)","Bukayo Saka (Inglaterra)","Jude Bellingham (Inglaterra)","Phil Foden (Inglaterra)","Neymar (Brasil)","Federico Valverde (Uruguay)","Darwin Núñez (Uruguay)","Rafael Leão (Portugal)","Florian Wirtz (Alemania)","Jamal Musiala (Alemania)","Antoine Griezmann (Francia)","Ousmane Dembélé (Francia)","Álvaro Morata (España)","Julian Alvarez (Argentina)","Lautaro Martínez (Argentina)","Luis Díaz (Colombia)","James Rodríguez (Colombia)","Santiago Giménez (México)","Hirving Lozano (México)","Christian Pulisic (EE.UU.)","Cody Gakpo (Países Bajos)","Kaoru Mitoma (Japón)","Achraf Hakimi (Marruecos)","Otro jugador"];
 
 const GROUP_MATCHES=Object.entries(GROUPS).flatMap(([g,t])=>[
@@ -233,6 +302,7 @@ export default function App(){
   const [allPicksData,setAllPicksData]=useState(null);
   const [allPicksLoading,setAllPicksLoading]=useState(false);
   const [expandedMatch,setExpandedMatch]=useState(null);
+  const [selectingCountry,setSelectingCountry]=useState(false);
   const [chatMessages,setChatMessages]=useState([]);
   const [chatInput,setChatInput]=useState("");
   const [chatSending,setChatSending]=useState(false);
@@ -340,7 +410,7 @@ export default function App(){
       setScreen("picks");return;
     }
     if(players.length>=30){setJoinError("Grupo lleno (máx 30)");return;}
-    const player={id:Date.now().toString(),name,pass};
+    const player={id:Date.now().toString(),name,pass,country:""};
     const updated=[...players,player];
     setPlayers(updated);await saveData("players",updated);
     setMe(player);localStorage.setItem("quiniela_me_fb",JSON.stringify(player));
@@ -511,6 +581,17 @@ export default function App(){
         <input style={inputStyle} placeholder="Ej: Juan Pérez" value={nameInput} onChange={e=>setNameInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleJoin()} autoCapitalize="words"/>
         <label style={labelStyle}>Tu clave personal</label>
         <input style={inputStyle} type="password" placeholder="Mínimo 4 caracteres" value={passInput} onChange={e=>setPassInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleJoin()}/>
+        <label style={labelStyle}>Tu selección (opcional)</label>
+        <select style={{...inputStyle,marginBottom:10}} value={nameInput===""?"":players.find(p=>p.name.toLowerCase()===nameInput.toLowerCase())?.country||""} onChange={async e=>{
+          const already=players.find(p=>p.name.toLowerCase()===nameInput.toLowerCase());
+          if(already){
+            const updated=players.map(p=>p.id===already.id?{...p,country:e.target.value}:p);
+            setPlayers(updated);await saveData("players",updated);
+          }
+        }}>
+          <option value="">— Elige tu país —</option>
+          {ALL_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
+        </select>
         <div style={{background:"rgba(245,236,215,0.03)",border:"1px solid rgba(245,236,215,0.06)",borderRadius:10,padding:"10px 12px",margin:"10px 0"}}>
           <p style={{color:"rgba(245,236,215,0.4)",fontSize:11,lineHeight:1.6}}>💡 <strong style={{color:C.creamDim}}>Primera vez:</strong> escribe tu nombre y elige una clave.<br/><strong style={{color:C.creamDim}}>Ya registrado:</strong> usa el mismo nombre y clave.</p>
         </div>
@@ -646,7 +727,11 @@ export default function App(){
             background:i===0?`linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.04))`:p.id===me?.id?`rgba(74,94,58,0.12)`:`rgba(92,26,39,0.08)`,
             border:i===0?`1px solid ${C.gold}`:p.id===me?.id?`1px solid rgba(74,94,58,0.3)`:`1px solid rgba(201,168,76,0.06)`}}>
             <span style={{fontSize:16,minWidth:28,textAlign:"center"}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</span>
-            <div style={{flex:1}}><p style={{fontSize:14,fontWeight:700,color:i===0?C.gold:p.id===me?.id?C.oliveLt:C.cream}}>{p.name}{p.id===me?.id&&<span style={{fontSize:9,color:"rgba(245,236,215,0.2)",marginLeft:6}}>← tú</span>}</p></div>
+            {p.country?<Jersey country={p.country} size={32}/>:<div style={{width:32,height:35,background:"rgba(255,255,255,0.05)",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🏳️</div>}
+            <div style={{flex:1}}>
+              <p style={{fontSize:14,fontWeight:700,color:i===0?C.gold:p.id===me?.id?C.oliveLt:C.cream}}>{p.name}{p.id===me?.id&&<span style={{fontSize:9,color:"rgba(245,236,215,0.2)",marginLeft:6}}>← tú</span>}</p>
+              {p.country&&<p style={{fontSize:10,color:"rgba(245,236,215,0.3)",marginTop:2}}>{FLAGS[p.country]||""} {p.country}</p>}
+            </div>
             <span style={{fontFamily:"'Cinzel',serif",fontSize:20,color:C.gold}}>{p.pts}<span style={{fontSize:10,color:"rgba(245,236,215,0.3)",fontFamily:"'Barlow',sans-serif"}}> pts</span></span>
           </div>
         ))}
@@ -802,11 +887,24 @@ export default function App(){
 
           {/* Header */}
           <div style={{background:"linear-gradient(135deg,rgba(92,26,39,0.4),rgba(92,26,39,0.15))",border:`1px solid ${C.gold}`,borderRadius:16,padding:"20px 16px",marginBottom:14,textAlign:"center",animation:"glow 3s ease-in-out infinite"}}>
-            <div style={{width:64,height:64,borderRadius:"50%",background:`radial-gradient(circle,${C.granateDk},#1A0A0E)`,border:`2px solid ${C.gold}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 10px",fontSize:28}}>
-              {me.name[0].toUpperCase()}
+            <div style={{display:"flex",justifyContent:"center",marginBottom:10,gap:10,alignItems:"center"}}>
+              <div style={{width:64,height:64,borderRadius:"50%",background:`radial-gradient(circle,${C.granateDk},#1A0A0E)`,border:`2px solid ${C.gold}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>
+                {me.name[0].toUpperCase()}
+              </div>
+              {me.country&&<Jersey country={me.country} size={52}/>}
             </div>
             <p style={{fontFamily:"'Cinzel',serif",fontSize:20,color:C.gold,fontWeight:900}}>{me.name}</p>
             <p style={{color:C.creamDim,fontSize:12,marginTop:4}}>Quiniela Tercer Mundo FC · Mundial 2026</p>
+            <select style={{background:"rgba(255,255,255,0.07)",border:`1px solid ${C.border}`,color:C.cream,padding:"6px 12px",borderRadius:20,fontSize:11,marginTop:8,fontFamily:"'Barlow',sans-serif",cursor:"pointer"}}
+              value={me.country||""} onChange={async e=>{
+                const updated={...me,country:e.target.value};
+                setMe(updated);localStorage.setItem("quiniela_me_fb",JSON.stringify(updated));
+                const updatedPlayers=players.map(p=>p.id===me.id?updated:p);
+                setPlayers(updatedPlayers);await saveData("players",updatedPlayers);
+              }}>
+              <option value="">🏳️ Elige tu selección</option>
+              {ALL_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
+            </select>
             <div style={{display:"flex",justifyContent:"center",gap:16,marginTop:12}}>
               <div style={{textAlign:"center"}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:28,color:C.gold,fontWeight:900}}>{grandTotal}</p>
