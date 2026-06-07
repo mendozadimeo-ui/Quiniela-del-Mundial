@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, addDoc, onSnapshot, orderBy, query, limit, serverTimestamp } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCQ8B3zbZJgScKlzO0Ed5zDz0z2KNb71PI",
@@ -190,13 +190,38 @@ export default function App(){
   const [allPicksData,setAllPicksData]=useState(null);
   const [allPicksLoading,setAllPicksLoading]=useState(false);
   const [expandedMatch,setExpandedMatch]=useState(null);
+  const [chatMessages,setChatMessages]=useState([]);
+  const [chatInput,setChatInput]=useState("");
+  const [chatSending,setChatSending]=useState(false);
+  const [chatUnread,setChatUnread]=useState(0);
+  const [lastSeenChat,setLastSeenChat]=useState(0);
   const [showPassFor,setShowPassFor]=useState(null);
   const [confirmDelete,setConfirmDelete]=useState(null);
   const [now,setNow]=useState(new Date());
+  const [countdown,setCountdown]=useState({d:0,h:0,m:0,s:0,match:null});
 
   // Actualizar "now" cada minuto para que el bloqueo sea en tiempo real
   useEffect(()=>{
-    const t=setInterval(()=>setNow(new Date()),60000);
+    function tick(){
+      const n=new Date();
+      setNow(new Date(n));
+      // Find next match
+      const upcoming=ALL_MATCHES
+        .map(m=>({...m,date:MD[m.id]}))
+        .filter(m=>m.date&&m.date>n)
+        .sort((a,b)=>a.date-b.date);
+      if(upcoming.length>0){
+        const next=upcoming[0];
+        const diff=next.date-n;
+        const d=Math.floor(diff/(1000*60*60*24));
+        const h=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+        const m=Math.floor((diff%(1000*60*60))/(1000*60));
+        const s=Math.floor((diff%(1000*60))/1000);
+        setCountdown({d,h,m,s,match:next});
+      }
+    }
+    tick();
+    const t=setInterval(tick,1000);
     return()=>clearInterval(t);
   },[]);
 
@@ -220,6 +245,41 @@ export default function App(){
     }
     init();
   },[]);
+
+  // Chat real-time listener
+  useEffect(()=>{
+    const q=query(collection(db,"chat"),orderBy("ts","desc"),limit(100));
+    const unsub=onSnapshot(q,snap=>{
+      const msgs=snap.docs.map(d=>({id:d.id,...d.data()})).reverse();
+      setChatMessages(msgs);
+      // Count unread
+      const last=parseInt(localStorage.getItem("lastSeenChat")||"0");
+      const unread=msgs.filter(m=>m.ts&&m.ts.toMillis&&m.ts.toMillis()>last).length;
+      setChatUnread(unread);
+    });
+    return()=>unsub();
+  },[]);
+
+  async function sendChatMessage(){
+    if(!chatInput.trim()||!me)return;
+    setChatSending(true);
+    try{
+      await addDoc(collection(db,"chat"),{
+        text:chatInput.trim(),
+        name:me.name,
+        ts:serverTimestamp(),
+      });
+      setChatInput("");
+    }catch(e){console.error(e);}
+    setChatSending(false);
+  }
+
+  function markChatRead(){
+    const now=Date.now();
+    localStorage.setItem("lastSeenChat",now.toString());
+    setLastSeenChat(now);
+    setChatUnread(0);
+  }
 
   function showToast(msg,color=C.olive){setToast({msg,color});setTimeout(()=>setToast(null),2800);}
 
@@ -340,6 +400,25 @@ export default function App(){
           <p style={{fontFamily:"'Cinzel',serif",fontSize:42,color:C.gold,lineHeight:1,fontWeight:900}}>${pozo}</p>
           <p style={{color:"rgba(245,236,215,0.4)",fontSize:11,marginTop:4}}>{players.length} jugadores × $5 · El campeón se lo lleva todo</p>
         </div>
+        {/* COUNTDOWN */}
+        {countdown.match&&(
+          <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:14,padding:"14px 20px",marginBottom:20,textAlign:"center",width:"100%",maxWidth:300}}>
+            <p style={{color:"rgba(245,236,215,0.4)",fontSize:10,letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>⏱️ Próximo partido</p>
+            <p style={{color:"#F5ECD7",fontSize:12,marginBottom:10,fontWeight:600}}>
+              {FLAGS[countdown.match.home]||"🏳️"} {countdown.match.home} vs {countdown.match.away} {FLAGS[countdown.match.away]||"🏳️"}
+            </p>
+            <div style={{display:"flex",justifyContent:"center",gap:10}}>
+              {[[countdown.d,"DÍAS"],[countdown.h,"HRS"],[countdown.m,"MIN"],[countdown.s,"SEG"]].map(([val,lbl])=>(
+                <div key={lbl} style={{background:"rgba(201,168,76,0.1)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:10,padding:"8px 10px",minWidth:48,textAlign:"center"}}>
+                  <p style={{fontFamily:"'Cinzel',serif",fontSize:22,color:"#C9A84C",lineHeight:1,fontWeight:900}}>{String(val).padStart(2,"0")}</p>
+                  <p style={{fontSize:8,color:"rgba(245,236,215,0.3)",letterSpacing:2,marginTop:3}}>{lbl}</p>
+                </div>
+              ))}
+            </div>
+            <p style={{color:"rgba(245,236,215,0.3)",fontSize:10,marginTop:8}}>{countdown.match.date?countdown.match.date.toLocaleDateString("es",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit",timeZone:"America/New_York"})+" ET":""}</p>
+          </div>
+        )}
+
         <div style={{display:"flex",gap:10,marginBottom:20}}>
           {[["⚽","104","Partidos"],["🏟️","48","Equipos"],["👥",players.length,"Jugadores"]].map(([ic,n,l])=>(
             <div key={l} style={{background:C.creamFaint,border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 14px",textAlign:"center"}}>
@@ -352,6 +431,11 @@ export default function App(){
         <div style={{display:"flex",flexDirection:"column",gap:10,width:"100%",maxWidth:300,marginBottom:20}}>
           <button style={btnGold} onClick={()=>setScreen("join")}>🙋 Unirme / Ingresar</button>
           <button style={btnOutline} onClick={()=>setScreen("standings")}>🏆 Tabla de participantes</button>
+          {me&&<button style={btnOutline} onClick={()=>setScreen("profile")}>👤 Mi perfil y estadísticas</button>}
+          <button style={{...btnOutline,position:"relative"}} onClick={()=>{markChatRead();setScreen("chat");}}>
+            💬 Chat del grupo
+            {chatUnread>0&&<span style={{position:"absolute",top:-6,right:-6,background:"#ef4444",color:"#fff",borderRadius:"50%",width:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{chatUnread}</span>}
+          </button>
           <button style={btnOutline} onClick={()=>{loadAllPicks();setScreen("allPicks");}}>🎯 Ver pronósticos de todos</button>
           <button style={btnOutline} onClick={()=>setScreen("groupTable")}>📊 Tabla de grupos</button>
         </div>
@@ -568,6 +652,198 @@ export default function App(){
       </div>
     </div>
   );
+
+  // ── CHAT SCREEN ───────────────────────────────────────────────────────────
+  if(screen==="chat")return(
+    <div style={{...pageRoot,display:"flex",flexDirection:"column",height:"100vh"}}><GF/>{toast&&<Toast data={toast}/>}
+      <div style={topBar}>
+        <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <img src={ESCUDO_URL} alt="" style={{width:26,height:26,borderRadius:"50%",objectFit:"cover",border:`1px solid ${C.gold}`}}/>
+          <p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,letterSpacing:2}}>💬 CHAT</p>
+        </div>
+        <span style={{fontSize:11,color:"rgba(245,236,215,0.3)"}}>{players.length} jugadores</span>
+      </div>
+
+      {/* Messages */}
+      <div style={{flex:1,overflowY:"auto",padding:"12px 10px",display:"flex",flexDirection:"column",gap:8,paddingBottom:80}}>
+        {chatMessages.length===0&&(
+          <div style={{textAlign:"center",paddingTop:40}}>
+            <p style={{fontSize:32,marginBottom:8}}>💬</p>
+            <p style={{color:"rgba(245,236,215,0.3)",fontSize:13}}>Nadie ha escrito aún</p>
+            <p style={{color:"rgba(245,236,215,0.2)",fontSize:11,marginTop:4}}>¡Sé el primero en escribir!</p>
+          </div>
+        )}
+        {chatMessages.map((msg,i)=>{
+          const isMe=msg.name===me?.name;
+          const time=msg.ts?.toDate?msg.ts.toDate().toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"}):"";
+          const prevMsg=chatMessages[i-1];
+          const showName=!prevMsg||prevMsg.name!==msg.name;
+          return(
+            <div key={msg.id} style={{display:"flex",flexDirection:"column",alignItems:isMe?"flex-end":"flex-start"}}>
+              {showName&&!isMe&&<p style={{fontSize:10,color:C.gold,fontWeight:700,marginBottom:3,marginLeft:4}}>{msg.name}</p>}
+              <div style={{
+                maxWidth:"78%",
+                background:isMe?"linear-gradient(135deg,#5C1A27,#7D2438)":"rgba(255,255,255,0.06)",
+                border:isMe?`1px solid rgba(201,168,76,0.3)`:"1px solid rgba(255,255,255,0.08)",
+                borderRadius:isMe?"16px 16px 4px 16px":"16px 16px 16px 4px",
+                padding:"10px 14px",
+              }}>
+                <p style={{color:"#F5ECD7",fontSize:14,lineHeight:1.4,wordBreak:"break-word"}}>{msg.text}</p>
+                <p style={{color:"rgba(245,236,215,0.3)",fontSize:10,marginTop:4,textAlign:isMe?"right":"left"}}>{time}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Input */}
+      {me?(
+        <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"10px 12px",background:"rgba(26,10,14,0.97)",backdropFilter:"blur(20px)",borderTop:`1px solid ${C.border}`,display:"flex",gap:8,alignItems:"center"}}>
+          <input
+            style={{flex:1,background:"rgba(255,255,255,0.07)",border:`1px solid ${C.border}`,color:"#F5ECD7",padding:"11px 14px",borderRadius:24,fontSize:14,fontFamily:"'Barlow',sans-serif",outline:"none"}}
+            placeholder="Escribe algo..."
+            value={chatInput}
+            onChange={e=>setChatInput(e.target.value)}
+            onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&sendChatMessage()}
+          />
+          <button
+            onClick={sendChatMessage}
+            disabled={chatSending||!chatInput.trim()}
+            style={{background:chatInput.trim()?"linear-gradient(135deg,#8B5E0A,#C9A84C)":"rgba(255,255,255,0.05)",border:"none",color:chatInput.trim()?"#1A0A0E":"rgba(255,255,255,0.2)",width:44,height:44,borderRadius:"50%",fontSize:18,cursor:chatInput.trim()?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.2s"}}>
+            {chatSending?"⏳":"→"}
+          </button>
+        </div>
+      ):(
+        <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"12px",background:"rgba(26,10,14,0.97)",borderTop:`1px solid ${C.border}`,textAlign:"center"}}>
+          <p style={{color:"rgba(245,236,215,0.4)",fontSize:12}}>Regístrate para escribir en el chat</p>
+          <button style={{...btnGold,marginTop:8}} onClick={()=>setScreen("join")}>Unirme →</button>
+        </div>
+      )}
+    </div>
+  );
+
+  // ── PROFILE SCREEN ────────────────────────────────────────────────────────
+  if(screen==="profile"&&me){
+    // Calculate stats
+    const playedMatches=ALL_MATCHES.filter(m=>results[m.id]&&results[m.id].h!=="");
+    let exact=0,winner=0,fail=0,totalPts=0,streak=0,bestStreak=0,curStreak=0;
+    let byRound={Grupos:{pts:0,exact:0,winner:0,fail:0},Octavos:{pts:0,exact:0,winner:0,fail:0},Cuartos:{pts:0,exact:0,winner:0,fail:0},Semifinal:{pts:0,exact:0,winner:0,fail:0},"Tercer Lugar":{pts:0,exact:0,winner:0,fail:0},Final:{pts:0,exact:0,winner:0,fail:0}};
+    const recentMatches=[];
+    playedMatches.forEach(m=>{
+      const pick=myPicks[m.id]||{h:"",a:""};
+      const result=results[m.id];
+      const pts=calcMatchPoints(pick,result);
+      totalPts+=pts;
+      if(pts===3){exact++;curStreak++;if(curStreak>bestStreak)bestStreak=curStreak;}
+      else if(pts===2){winner++;curStreak++;if(curStreak>bestStreak)bestStreak=curStreak;}
+      else{fail++;curStreak=0;}
+      if(byRound[m.round]){byRound[m.round].pts+=pts;if(pts===3)byRound[m.round].exact++;else if(pts===2)byRound[m.round].winner++;else if(pick.h!=="")byRound[m.round].fail++;}
+      recentMatches.push({match:m,pick,result,pts});
+    });
+    streak=curStreak;
+    const specialPts=calcSpecialPoints(mySpecial,adminSpecial);
+    const grandTotal=totalPts+specialPts;
+    const pct=playedMatches.length>0?Math.round(((exact+winner)/playedMatches.filter(m=>{const p=myPicks[m.id];return p&&p.h!=="";}).length)*100)||0:0;
+    const myRank=standings.findIndex(p=>p.id===me.id)+1||"—";
+    const last5=recentMatches.slice(-5).reverse();
+
+    return(
+      <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
+        <div style={topBar}>
+          <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
+          <p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,letterSpacing:2}}>👤 MI PERFIL</p>
+          <span/>
+        </div>
+        <div style={{padding:"12px"}}>
+
+          {/* Header */}
+          <div style={{background:"linear-gradient(135deg,rgba(92,26,39,0.4),rgba(92,26,39,0.15))",border:`1px solid ${C.gold}`,borderRadius:16,padding:"20px 16px",marginBottom:14,textAlign:"center",animation:"glow 3s ease-in-out infinite"}}>
+            <div style={{width:64,height:64,borderRadius:"50%",background:`radial-gradient(circle,${C.granateDk},#1A0A0E)`,border:`2px solid ${C.gold}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 10px",fontSize:28}}>
+              {me.name[0].toUpperCase()}
+            </div>
+            <p style={{fontFamily:"'Cinzel',serif",fontSize:20,color:C.gold,fontWeight:900}}>{me.name}</p>
+            <p style={{color:C.creamDim,fontSize:12,marginTop:4}}>Quiniela Tercer Mundo FC · Mundial 2026</p>
+            <div style={{display:"flex",justifyContent:"center",gap:16,marginTop:12}}>
+              <div style={{textAlign:"center"}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:28,color:C.gold,fontWeight:900}}>{grandTotal}</p>
+                <p style={{fontSize:9,color:"rgba(245,236,215,0.4)",letterSpacing:2}}>PUNTOS</p>
+              </div>
+              <div style={{width:1,background:"rgba(201,168,76,0.2)"}}/>
+              <div style={{textAlign:"center"}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:28,color:C.gold,fontWeight:900}}>#{myRank}</p>
+                <p style={{fontSize:9,color:"rgba(245,236,215,0.4)",letterSpacing:2}}>POSICIÓN</p>
+              </div>
+              <div style={{width:1,background:"rgba(201,168,76,0.2)"}}/>
+              <div style={{textAlign:"center"}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:28,color:C.gold,fontWeight:900}}>{pct}%</p>
+                <p style={{fontSize:9,color:"rgba(245,236,215,0.4)",letterSpacing:2}}>ACIERTOS</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats grid */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+            {[
+              ["✨","Marcador exacto",exact,"#22c55e"],
+              ["✅","Ganador acertado",winner,C.gold],
+              ["❌","Fallos",fail,"#ef4444"],
+              ["🔥","Racha actual",streak,streak>=3?"#22c55e":C.creamDim],
+              ["⚡","Mejor racha",bestStreak,C.gold],
+              ["🏆","Pts especiales",specialPts,"#7c3aed"],
+            ].map(([ic,lbl,val,col])=>(
+              <div key={lbl} style={{background:"rgba(92,26,39,0.1)",border:"1px solid rgba(201,168,76,0.08)",borderRadius:12,padding:"12px 14px"}}>
+                <p style={{fontSize:18,marginBottom:4}}>{ic}</p>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:22,color:col,fontWeight:900,lineHeight:1}}>{val}</p>
+                <p style={{color:"rgba(245,236,215,0.4)",fontSize:10,marginTop:4}}>{lbl}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Pronósticos especiales */}
+          <div style={{background:"rgba(92,26,39,0.1)",border:"1px solid rgba(201,168,76,0.08)",borderRadius:12,padding:"14px",marginBottom:14}}>
+            <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:12,letterSpacing:2,marginBottom:10}}>🎯 MIS PRONÓSTICOS ESPECIALES</p>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+              <span style={{color:C.creamDim,fontSize:12}}>🏆 Campeón:</span>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                <span style={{color:mySpecial.champion?C.cream:"rgba(245,236,215,0.3)",fontSize:12,fontWeight:700}}>{mySpecial.champion||"No ingresado"}</span>
+                {adminSpecial?.champion&&mySpecial.champion===adminSpecial.champion&&<span style={{color:"#22c55e",fontSize:11}}>✨ +10pts</span>}
+              </div>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{color:C.creamDim,fontSize:12}}>👟 Goleador:</span>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                <span style={{color:mySpecial.scorer?C.cream:"rgba(245,236,215,0.3)",fontSize:12,fontWeight:700}}>{mySpecial.scorer||"No ingresado"}</span>
+                {adminSpecial?.scorer&&mySpecial.scorer===adminSpecial.scorer&&<span style={{color:"#22c55e",fontSize:11}}>✨ +8pts</span>}
+              </div>
+            </div>
+          </div>
+
+          {/* Últimos 5 resultados */}
+          {last5.length>0&&(
+            <div style={{background:"rgba(92,26,39,0.1)",border:"1px solid rgba(201,168,76,0.08)",borderRadius:12,padding:"14px",marginBottom:14}}>
+              <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:12,letterSpacing:2,marginBottom:10}}>📋 ÚLTIMOS PARTIDOS</p>
+              {last5.map((e,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:i<last5.length-1?"1px solid rgba(255,255,255,0.04)":"none"}}>
+                  <span style={{fontSize:16,minWidth:24,textAlign:"center",background:e.pts===3?"rgba(34,197,94,0.15)":e.pts===2?"rgba(201,168,76,0.15)":"rgba(239,68,68,0.15)",borderRadius:6,padding:"2px 4px"}}>{e.pts===3?"✨":e.pts===2?"✅":"❌"}</span>
+                  <div style={{flex:1}}>
+                    <p style={{fontSize:11,color:C.cream}}>{FLAGS[e.match.home]||"🏳️"} {e.match.home} vs {e.match.away} {FLAGS[e.match.away]||"🏳️"}</p>
+                    <p style={{fontSize:10,color:"rgba(245,236,215,0.4)",marginTop:2}}>
+                      Tu pronóstico: <strong style={{color:e.pts>0?C.gold:"rgba(245,236,215,0.5)"}}>{e.pick.h!==""?`${e.pick.h}-${e.pick.a}`:"—"}</strong>
+                      {e.result&&e.result.h!==""&&<> · Real: <strong style={{color:C.creamDim}}>{e.result.h}-{e.result.a}</strong></>}
+                    </p>
+                  </div>
+                  <span style={{fontFamily:"'Cinzel',serif",fontSize:16,color:e.pts===3?"#22c55e":e.pts===2?C.gold:"#ef4444",fontWeight:700}}>{e.pts}pts</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button style={btnGold} onClick={()=>setScreen("picks")}>✏️ Ir a mis pronósticos</button>
+        </div>
+      </div>
+    );
+  }
 
   // ── ALL PICKS SCREEN ──────────────────────────────────────────────────────
   if(screen==="allPicks"){
