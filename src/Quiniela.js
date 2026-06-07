@@ -229,7 +229,6 @@ function Jersey({country, size=36}){
   );
 }
 
-const TOP_SCORERS=[
 const TOP_SCORERS=["Kylian Mbappé (Francia)","Erling Haaland (Noruega)","Vinicius Jr. (Brasil)","Lionel Messi (Argentina)","Cristiano Ronaldo (Portugal)","Harry Kane (Inglaterra)","Pedri (España)","Lamine Yamal (España)","Bukayo Saka (Inglaterra)","Jude Bellingham (Inglaterra)","Phil Foden (Inglaterra)","Neymar (Brasil)","Federico Valverde (Uruguay)","Darwin Núñez (Uruguay)","Rafael Leão (Portugal)","Florian Wirtz (Alemania)","Jamal Musiala (Alemania)","Antoine Griezmann (Francia)","Ousmane Dembélé (Francia)","Álvaro Morata (España)","Julian Alvarez (Argentina)","Lautaro Martínez (Argentina)","Luis Díaz (Colombia)","James Rodríguez (Colombia)","Santiago Giménez (México)","Hirving Lozano (México)","Christian Pulisic (EE.UU.)","Cody Gakpo (Países Bajos)","Kaoru Mitoma (Japón)","Achraf Hakimi (Marruecos)","Otro jugador"];
 
 const GROUP_MATCHES=Object.entries(GROUPS).flatMap(([g,t])=>[
