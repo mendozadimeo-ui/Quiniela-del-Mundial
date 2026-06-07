@@ -544,6 +544,8 @@ export default function App(){
           <button style={btnGold} onClick={()=>setScreen("join")}>🙋 Unirme / Ingresar</button>
           <button style={btnOutline} onClick={()=>setScreen("standings")}>🏆 Tabla de participantes</button>
           <button style={btnOutline} onClick={()=>setScreen("bracket")}>🏅 Bracket eliminatorio</button>
+          <button style={btnOutline} onClick={()=>setScreen("chart")}>📈 Gráfica de posiciones</button>
+          {me&&<button style={btnOutline} onClick={()=>setScreen("h2h")}>⚔️ Head to Head</button>}
           {me&&<button style={btnOutline} onClick={()=>setScreen("profile")}>👤 Mi perfil y estadísticas</button>}
           <button style={{...btnOutline,position:"relative"}} onClick={()=>{markChatRead();setScreen("chat");}}>
             💬 Chat del grupo
@@ -855,6 +857,252 @@ export default function App(){
       )}
     </div>
   );
+
+  // ── CHART SCREEN ──────────────────────────────────────────────────────────
+  if(screen==="chart"){
+    const COLORS=["#C9A84C","#22c55e","#3b82f6","#ec4899","#f97316","#a78bfa","#34d399","#fb923c","#60a5fa","#f472b6","#4ade80","#fbbf24","#818cf8","#2dd4bf","#e879f9","#facc15","#94a3b8","#f87171","#86efac","#7dd3fc"];
+
+    // Get all played matches in order
+    const played=Object.entries(results)
+      .filter(([,r])=>r&&r.h!=="")
+      .map(([id,r])=>({id,r}));
+
+    // For each player compute cumulative points after each match
+    const [chartData,setChartData]=React.useState(null);
+    const [chartLoaded,setChartLoaded]=React.useState(false);
+
+    React.useEffect(()=>{
+      if(chartLoaded)return;
+      async function build(){
+        const allPicks={};
+        for(const p of players){
+          allPicks[p.id]=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});
+        }
+        // Build cumulative points per match
+        const series=players.map((p,pi)=>{
+          let cum=0;
+          const points=played.map(({id,r})=>{
+            const pick=allPicks[p.id]?.[id]||{h:"",a:""};
+            cum+=calcMatchPoints(pick,r);
+            return cum;
+          });
+          return{name:p.name,points,color:COLORS[pi%COLORS.length],id:p.id};
+        });
+        setChartData(series);
+        setChartLoaded(true);
+      }
+      build();
+    },[chartLoaded]);
+
+    // SVG chart dimensions
+    const W=320,H=200,PAD={t:10,r:10,b:30,l:35};
+    const chartW=W-PAD.l-PAD.r,chartH=H-PAD.t-PAD.b;
+    const maxPts=chartData?Math.max(10,...chartData.flatMap(s=>s.points)):10;
+    const nMatches=played.length;
+
+    const xScale=(i)=>nMatches<=1?PAD.l+chartW/2:PAD.l+(i/(nMatches-1))*chartW;
+    const yScale=(v)=>PAD.t+chartH-(v/maxPts)*chartH;
+
+    return(
+      <div style={{...pageRoot,paddingBottom:40}}><GF/>
+        <div style={topBar}>
+          <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
+          <p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,letterSpacing:2}}>📈 GRÁFICA</p>
+          <span/>
+        </div>
+        <div style={{padding:"12px"}}>
+          <p style={{color:"rgba(245,236,215,0.4)",fontSize:11,textAlign:"center",marginBottom:12}}>
+            Evolución de puntos partido a partido
+          </p>
+          {!chartLoaded&&<p style={{color:C.creamDim,textAlign:"center",padding:40}}>Calculando...</p>}
+          {chartLoaded&&played.length===0&&<p style={{color:"rgba(245,236,215,0.3)",textAlign:"center",padding:40}}>Aún no hay partidos jugados</p>}
+          {chartLoaded&&played.length>0&&chartData&&(
+            <>
+              {/* SVG Chart */}
+              <div style={{background:"rgba(92,26,39,0.1)",border:`1px solid ${C.border}`,borderRadius:14,padding:"12px",marginBottom:14,overflowX:"auto"}}>
+                <svg width={W} height={H} style={{display:"block",margin:"0 auto"}}>
+                  {/* Grid lines */}
+                  {[0,25,50,75,100].filter(v=>v<=maxPts+5).map(v=>(
+                    <g key={v}>
+                      <line x1={PAD.l} y1={yScale(v)} x2={PAD.l+chartW} y2={yScale(v)} stroke="rgba(255,255,255,0.05)" strokeWidth="1"/>
+                      <text x={PAD.l-4} y={yScale(v)+4} textAnchor="end" fill="rgba(245,236,215,0.3)" fontSize="8">{v}</text>
+                    </g>
+                  ))}
+                  {/* Lines per player */}
+                  {chartData.map(series=>{
+                    if(series.points.length===0)return null;
+                    const pts=[0,...series.points];
+                    const path=pts.map((v,i)=>`${i===0?"M":"L"}${xScale(i-1<0?0:i-1)},${yScale(v)}`).join(" ");
+                    // Recalc properly
+                    const path2=series.points.map((v,i)=>`${i===0?"M":"L"}${xScale(i)},${yScale(v)}`).join(" ");
+                    const lastX=xScale(series.points.length-1);
+                    const lastY=yScale(series.points[series.points.length-1]);
+                    return(
+                      <g key={series.id}>
+                        <path d={path2} fill="none" stroke={series.color} strokeWidth="2" strokeLinejoin="round"/>
+                        <circle cx={lastX} cy={lastY} r="4" fill={series.color}/>
+                      </g>
+                    );
+                  })}
+                  {/* X axis label */}
+                  <text x={PAD.l+chartW/2} y={H-4} textAnchor="middle" fill="rgba(245,236,215,0.2)" fontSize="8">Partidos jugados ({played.length})</text>
+                </svg>
+              </div>
+
+              {/* Legend */}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                {chartData.sort((a,b)=>(b.points[b.points.length-1]||0)-(a.points[a.points.length-1]||0)).map((s,i)=>(
+                  <div key={s.id} style={{display:"flex",alignItems:"center",gap:6,background:"rgba(92,26,39,0.1)",border:"1px solid rgba(255,255,255,0.05)",borderRadius:8,padding:"6px 8px"}}>
+                    <div style={{width:12,height:12,borderRadius:"50%",background:s.color,flexShrink:0}}/>
+                    <span style={{fontSize:11,color:s.id===me?.id?"#F5ECD7":C.creamDim,fontWeight:s.id===me?.id?700:400,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.name}</span>
+                    <span style={{fontFamily:"'Cinzel',serif",fontSize:13,color:s.color,fontWeight:700}}>{s.points[s.points.length-1]||0}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── HEAD TO HEAD ───────────────────────────────────────────────────────────
+  if(screen==="h2h"&&me){
+    const others=players.filter(p=>p.id!==me.id);
+    const [rival,setRival]=React.useState(others[0]||null);
+    const [h2hData,setH2hData]=React.useState(null);
+    const [h2hLoading,setH2hLoading]=React.useState(false);
+
+    React.useEffect(()=>{
+      if(!rival)return;
+      async function compute(){
+        setH2hLoading(true);
+        const rivalPicks=await loadData(`picks_${rival.id}`)||{};
+        const rivalSpecial=await loadData(`special_${rival.id}`)||{};
+        const played=Object.entries(results).filter(([,r])=>r&&r.h!=="");
+        let myPts=0,rivPts=0,myExact=0,rivExact=0,myWins=0,rivWins=0,draws=0,myPlayed=0,rivPlayed=0;
+        let myStreak=0,rivStreak=0,myBestStreak=0,rivBestStreak=0,myCur=0,rivCur=0;
+        played.forEach(([mid,result])=>{
+          const mp=myPicks[mid]||{h:"",a:""};
+          const rp=rivalPicks[mid]||{h:"",a:""};
+          const mpts=calcMatchPoints(mp,result);
+          const rpts=calcMatchPoints(rp,result);
+          if(mp.h!==""){myPts+=mpts;myPlayed++;if(mpts===3){myExact++;myCur++;}else{if(mpts>0)myCur++;else myCur=0;}if(myCur>myBestStreak)myBestStreak=myCur;}
+          if(rp.h!==""){rivPts+=rpts;rivPlayed++;if(rpts===3){rivExact++;rivCur++;}else{if(rpts>0)rivCur++;else rivCur=0;}if(rivCur>rivBestStreak)rivBestStreak=rivCur;}
+          if(mp.h!==""&&rp.h!==""){if(mpts>rpts)myWins++;else if(rpts>mpts)rivWins++;else draws++;}
+        });
+        myStreak=myCur;rivStreak=rivCur;
+        const mySpPts=calcSpecialPoints(mySpecial,adminSpecial);
+        const rivSpPts=calcSpecialPoints(rivalSpecial,adminSpecial);
+        setH2hData({myPts:myPts+mySpPts,rivPts:rivPts+rivSpPts,myExact,rivExact,myWins,rivWins,draws,myPlayed,rivPlayed,myStreak,rivStreak,myBestStreak,rivBestStreak});
+        setH2hLoading(false);
+      }
+      compute();
+    },[rival]);
+
+    const Bar=({myVal,rivVal,label})=>{
+      const total=myVal+rivVal||1;
+      const myPct=Math.round((myVal/total)*100);
+      const rivPct=100-myPct;
+      return(
+        <div style={{marginBottom:10}}>
+          <p style={{color:"rgba(245,236,215,0.4)",fontSize:10,textAlign:"center",marginBottom:4,letterSpacing:1}}>{label}</p>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <span style={{fontFamily:"'Cinzel',serif",fontSize:16,color:C.gold,minWidth:28,textAlign:"right"}}>{myVal}</span>
+            <div style={{flex:1,height:10,borderRadius:5,overflow:"hidden",background:"rgba(255,255,255,0.05)",display:"flex"}}>
+              <div style={{width:`${myPct}%`,background:`linear-gradient(90deg,#8B5E0A,#C9A84C)`,transition:"width 0.5s"}}/>
+              <div style={{width:`${rivPct}%`,background:`linear-gradient(90deg,#5C1A27,#7D2438)`,transition:"width 0.5s"}}/>
+            </div>
+            <span style={{fontFamily:"'Cinzel',serif",fontSize:16,color:"#7D2438",minWidth:28}}>{rivVal}</span>
+          </div>
+        </div>
+      );
+    };
+
+    return(
+      <div style={{...pageRoot,paddingBottom:40}}><GF/>
+        <div style={topBar}>
+          <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
+          <p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,letterSpacing:2}}>⚔️ HEAD TO HEAD</p>
+          <span/>
+        </div>
+        <div style={{padding:"12px"}}>
+          {/* Selector de rival */}
+          <div style={{background:"rgba(92,26,39,0.15)",border:`1px solid ${C.border}`,borderRadius:12,padding:"12px",marginBottom:14}}>
+            <p style={{color:"rgba(245,236,215,0.4)",fontSize:10,letterSpacing:2,marginBottom:8}}>ELIGE TU RIVAL</p>
+            <select style={{...inputStyle,margin:0}} value={rival?.id||""} onChange={e=>{
+              const p=players.find(x=>x.id===e.target.value);
+              setRival(p||null);setH2hData(null);
+            }}>
+              {others.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+
+          {/* VS Header */}
+          {rival&&(
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,padding:"14px",background:"linear-gradient(135deg,rgba(201,168,76,0.1),rgba(92,26,39,0.15))",border:`1px solid ${C.gold}`,borderRadius:14}}>
+              <div style={{textAlign:"center",flex:1}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:16,color:C.gold,fontWeight:900}}>{me.name}</p>
+                <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginTop:2}}>TÚ</p>
+              </div>
+              <div style={{textAlign:"center",padding:"6px 12px",background:"rgba(201,168,76,0.15)",borderRadius:20,border:`1px solid ${C.border}`}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:14,color:C.gold}}>VS</p>
+              </div>
+              <div style={{textAlign:"center",flex:1}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:16,color:"#F5ECD7",fontWeight:900}}>{rival.name}</p>
+                <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginTop:2}}>RIVAL</p>
+              </div>
+            </div>
+          )}
+
+          {h2hLoading&&<p style={{color:C.creamDim,textAlign:"center",padding:20}}>Calculando...</p>}
+
+          {h2hData&&!h2hLoading&&(
+            <>
+              {/* Wins */}
+              <div style={{display:"flex",gap:8,marginBottom:14,textAlign:"center"}}>
+                {[
+                  [h2hData.myWins,"MIS VICTORIAS","#22c55e"],
+                  [h2hData.draws,"EMPATES","rgba(245,236,215,0.4)"],
+                  [h2hData.rivWins,"SUS VICTORIAS","#ef4444"],
+                ].map(([v,l,c])=>(
+                  <div key={l} style={{flex:1,background:"rgba(92,26,39,0.1)",border:"1px solid rgba(255,255,255,0.05)",borderRadius:10,padding:"10px 4px"}}>
+                    <p style={{fontFamily:"'Cinzel',serif",fontSize:26,color:c,fontWeight:900,lineHeight:1}}>{v}</p>
+                    <p style={{fontSize:8,color:"rgba(245,236,215,0.3)",letterSpacing:1,marginTop:4}}>{l}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bars */}
+              <div style={{background:"rgba(92,26,39,0.1)",border:`1px solid ${C.border}`,borderRadius:12,padding:"14px",marginBottom:10}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:12}}>
+                  <span style={{fontSize:11,color:C.gold,fontWeight:700}}>{me.name}</span>
+                  <span style={{fontSize:11,color:"rgba(245,236,215,0.5)"}}>Comparación</span>
+                  <span style={{fontSize:11,color:"#F5ECD7",fontWeight:700}}>{rival?.name}</span>
+                </div>
+                <Bar myVal={h2hData.myPts} rivVal={h2hData.rivPts} label="PUNTOS TOTALES"/>
+                <Bar myVal={h2hData.myExact} rivVal={h2hData.rivExact} label="MARCADORES EXACTOS"/>
+                <Bar myVal={h2hData.myPlayed} rivVal={h2hData.rivPlayed} label="PARTIDOS JUGADOS"/>
+                <Bar myVal={h2hData.myBestStreak} rivVal={h2hData.rivBestStreak} label="MEJOR RACHA"/>
+                <Bar myVal={h2hData.myStreak} rivVal={h2hData.rivStreak} label="RACHA ACTUAL"/>
+              </div>
+
+              {/* Veredicto */}
+              <div style={{background:h2hData.myPts>h2hData.rivPts?"rgba(34,197,94,0.08)":h2hData.myPts<h2hData.rivPts?"rgba(239,68,68,0.08)":"rgba(201,168,76,0.08)",border:`1px solid ${h2hData.myPts>h2hData.rivPts?"rgba(34,197,94,0.3)":h2hData.myPts<h2hData.rivPts?"rgba(239,68,68,0.3)":"rgba(201,168,76,0.3)"}`,borderRadius:12,padding:"12px",textAlign:"center"}}>
+                <p style={{fontSize:24,marginBottom:4}}>{h2hData.myPts>h2hData.rivPts?"😤":h2hData.myPts<h2hData.rivPts?"😬":"🤝"}</p>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:14,color:h2hData.myPts>h2hData.rivPts?"#22c55e":h2hData.myPts<h2hData.rivPts?"#ef4444":C.gold,fontWeight:700}}>
+                  {h2hData.myPts>h2hData.rivPts?"¡Le estás metiendo mano!":h2hData.myPts<h2hData.rivPts?"Te está comiendo el mandado":"¡Están parejos!"}
+                </p>
+                <p style={{color:"rgba(245,236,215,0.3)",fontSize:11,marginTop:4}}>
+                  Diferencia: {Math.abs(h2hData.myPts-h2hData.rivPts)} pts
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // ── BRACKET SCREEN ───────────────────────────────────────────────────────
   if(screen==="bracket"){
