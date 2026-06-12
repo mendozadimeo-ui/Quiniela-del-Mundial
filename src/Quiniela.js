@@ -315,6 +315,11 @@ export default function App(){
   const [showPassFor,setShowPassFor]=useState(null);
   const [confirmDelete,setConfirmDelete]=useState(null);
   const [newPlayerName,setNewPlayerName]=useState("");
+  const [editingPlayer,setEditingPlayer]=useState(null);
+  const [editPicks,setEditPicks]=useState({});
+  const [editSpecial,setEditSpecial]=useState({champion:"",scorer:""});
+  const [editGroup,setEditGroup]=useState("A");
+  const [editRound,setEditRound]=useState("Grupos");
   const [newPlayerPass,setNewPlayerPass]=useState("");
   const [addPlayerError,setAddPlayerError]=useState("");
   const [now,setNow]=useState(new Date());
@@ -513,6 +518,21 @@ export default function App(){
     }
     compute();
   },[screen,rival]);
+
+  async function handleLoadEditPlayer(player){
+    const picks=await loadData(`picks_${player.id}`)||{};
+    const special=await loadData(`special_${player.id}`)||{champion:"",scorer:""};
+    setEditPicks(picks);
+    setEditSpecial(special);
+    setEditingPlayer(player);
+  }
+
+  async function handleSaveEditPicks(){
+    if(!editingPlayer)return;
+    await saveData(`picks_${editingPlayer.id}`,editPicks);
+    await saveData(`special_${editingPlayer.id}`,editSpecial);
+    showToast(`✅ Pronósticos de ${editingPlayer.name} guardados`);
+  }
 
   async function handleAddPlayer(){
     const name=newPlayerName.trim();
@@ -1489,6 +1509,87 @@ export default function App(){
     const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:60}}><GF/>{toast&&<Toast data={toast}/>}
+        {/* EDIT PLAYER PICKS MODAL */}
+        {editingPlayer&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.9)",zIndex:100,overflowY:"auto"}}>
+            <div style={{background:"#1A0A0E",border:`1px solid ${C.border}`,borderRadius:16,padding:"20px 16px",margin:"20px auto",maxWidth:420}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+                <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:16}}>✏️ {editingPlayer.name}</p>
+                <button onClick={()=>setEditingPlayer(null)} style={{background:"none",border:"none",color:"rgba(245,236,215,0.4)",fontSize:20,cursor:"pointer"}}>✕</button>
+              </div>
+
+              {/* Round selector */}
+              <div style={{display:"flex",overflowX:"auto",gap:5,marginBottom:8,paddingBottom:4}}>
+                {["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"].map(r=>(
+                  <button key={r} style={r===editRound?tabOn:tabOff} onClick={()=>setEditRound(r)}>{r}</button>
+                ))}
+              </div>
+
+              {/* Group selector */}
+              {editRound==="Grupos"&&(
+                <div style={{display:"flex",overflowX:"auto",gap:4,marginBottom:8}}>
+                  {Object.keys(GROUPS).map(g=>(
+                    <button key={g} style={g===editGroup?grpOn:grpOff} onClick={()=>setEditGroup(g)}>Grupo {g}</button>
+                  ))}
+                </div>
+              )}
+
+              {/* Especiales */}
+              {editRound==="Especiales"&&(
+                <div>
+                  <label style={labelStyle}>🏆 Campeón del Mundial (10pts)</label>
+                  <select style={{...inputStyle,marginBottom:8}} value={editSpecial.champion||""} onChange={e=>setEditSpecial(s=>({...s,champion:e.target.value}))}>
+                    <option value="">— Sin selección —</option>
+                    {ALL_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
+                  </select>
+                  <label style={labelStyle}>👟 Top Goleador (8pts)</label>
+                  <select style={{...inputStyle}} value={editSpecial.scorer||""} onChange={e=>setEditSpecial(s=>({...s,scorer:e.target.value}))}>
+                    <option value="">— Sin selección —</option>
+                    {TOP_SCORERS.map(t=><option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {/* Matches */}
+              {editRound!=="Especiales"&&(
+                <div style={{maxHeight:400,overflowY:"auto",display:"flex",flexDirection:"column",gap:6}}>
+                  {(editRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===editGroup):ALL_MATCHES.filter(m=>m.round===editRound)).map(match=>{
+                    const pick=editPicks[match.id]||{h:"",a:""};
+                    return(
+                      <div key={match.id} style={matchCard}>
+                        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:6}}>
+                          <div style={{display:"flex",flexDirection:"column",gap:2,flex:1}}>
+                            <Flag name={match.home}/>
+                            <span style={{fontSize:10,color:C.creamDim}}>{match.home}</span>
+                          </div>
+                          <div style={{display:"flex",alignItems:"center",gap:4}}>
+                            <input style={{...scoreInput,background:"rgba(201,168,76,0.1)",borderColor:"rgba(201,168,76,0.3)"}}
+                              type="number" min="0" max="20" value={pick.h}
+                              onChange={e=>setEditPicks(p=>({...p,[match.id]:{...pick,h:e.target.value}}))} placeholder="—"/>
+                            <span style={{color:C.border}}>:</span>
+                            <input style={{...scoreInput,background:"rgba(201,168,76,0.1)",borderColor:"rgba(201,168,76,0.3)"}}
+                              type="number" min="0" max="20" value={pick.a}
+                              onChange={e=>setEditPicks(p=>({...p,[match.id]:{...pick,a:e.target.value}}))} placeholder="—"/>
+                          </div>
+                          <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:2,flex:1}}>
+                            <Flag name={match.away}/>
+                            <span style={{fontSize:10,color:C.creamDim}}>{match.away}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div style={{display:"flex",gap:8,marginTop:14}}>
+                <button style={{...btnOutline,flex:1}} onClick={()=>setEditingPlayer(null)}>Cancelar</button>
+                <button style={{...btnGold,flex:1}} onClick={handleSaveEditPicks}>💾 Guardar</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {confirmDelete&&(
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
             <div style={{background:"#1A0A0E",border:`1px solid ${C.border}`,borderRadius:16,padding:24,maxWidth:300,width:"100%",textAlign:"center"}}>
@@ -1587,7 +1688,11 @@ export default function App(){
                       <button onClick={()=>setShowPassFor(showPassFor===p.id?null:p.id)} style={{background:"none",border:"none",color:C.gold,cursor:"pointer",fontSize:12,padding:"0 4px"}}>{showPassFor===p.id?"🙈":"👁️"}</button>
                     </div>
                   </div>
-                  <button onClick={()=>setConfirmDelete(p)} style={{background:"rgba(220,38,38,0.15)",border:"1px solid rgba(220,38,38,0.3)",color:"#fca5a5",padding:"6px 10px",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"'Barlow',sans-serif"}}>🗑️ Eliminar</button>
+                  <div style={{display:"flex",gap:6}}>
+                    <button onClick={()=>handleLoadEditPlayer(p)}
+                      style={{background:"rgba(201,168,76,0.12)",border:`1px solid ${C.border}`,color:C.gold,padding:"6px 10px",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"'Barlow',sans-serif"}}>✏️ Editar</button>
+                    <button onClick={()=>setConfirmDelete(p)} style={{background:"rgba(220,38,38,0.15)",border:"1px solid rgba(220,38,38,0.3)",color:"#fca5a5",padding:"6px 10px",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"'Barlow',sans-serif"}}>🗑️</button>
+                  </div>
                 </div>
               </div>
             ))}
