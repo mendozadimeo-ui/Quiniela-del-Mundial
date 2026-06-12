@@ -314,6 +314,9 @@ export default function App(){
   const [lastSeenChat,setLastSeenChat]=useState(0);
   const [showPassFor,setShowPassFor]=useState(null);
   const [confirmDelete,setConfirmDelete]=useState(null);
+  const [newPlayerName,setNewPlayerName]=useState("");
+  const [newPlayerPass,setNewPlayerPass]=useState("");
+  const [addPlayerError,setAddPlayerError]=useState("");
   const [now,setNow]=useState(new Date());
   const [countdown,setCountdown]=useState({d:0,h:0,m:0,s:0,match:null});
 
@@ -510,6 +513,24 @@ export default function App(){
     }
     compute();
   },[screen,rival]);
+
+  async function handleAddPlayer(){
+    const name=newPlayerName.trim();
+    const pass=newPlayerPass.trim();
+    if(!name){setAddPlayerError("Escribe el nombre");return;}
+    if(pass.length<4){setAddPlayerError("La clave debe tener mínimo 4 caracteres");return;}
+    const already=players.find(p=>p.name.toLowerCase()===name.toLowerCase());
+    if(already){setAddPlayerError("Ya existe un jugador con ese nombre");return;}
+    if(players.length>=30){setAddPlayerError("Grupo lleno (máx 30)");return;}
+    const player={id:Date.now().toString(),name,pass};
+    const updated=[...players,player];
+    setPlayers(updated);
+    await saveData("players",updated);
+    setNewPlayerName("");
+    setNewPlayerPass("");
+    setAddPlayerError("");
+    showToast(`✅ ${name} agregado al grupo`);
+  }
 
   useEffect(()=>{
     if(screen!=="standings")return;
@@ -1534,6 +1555,24 @@ export default function App(){
               <span style={{color:C.creamDim,fontSize:12}}>💰 Pozo total</span>
               <span style={{fontFamily:"'Cinzel',serif",fontSize:26,color:C.gold,fontWeight:900}}>${pozo}</span>
             </div>
+
+            {/* AGREGAR JUGADOR */}
+            <div style={{background:"rgba(74,94,58,0.1)",border:"1px solid rgba(74,94,58,0.3)",borderRadius:12,padding:"12px",marginBottom:14}}>
+              <p style={{color:"#6B8A52",fontFamily:"'Cinzel',serif",fontSize:11,letterSpacing:1,marginBottom:10}}>➕ AGREGAR JUGADOR</p>
+              <label style={labelStyle}>Nombre</label>
+              <input style={inputStyle} placeholder="Nombre del jugador"
+                value={newPlayerName} onChange={e=>setNewPlayerName(e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&handleAddPlayer()}/>
+              <label style={labelStyle}>Clave</label>
+              <input style={inputStyle} placeholder="Clave para el jugador"
+                value={newPlayerPass} onChange={e=>setNewPlayerPass(e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&handleAddPlayer()}/>
+              {addPlayerError&&<div style={errorBox}>⚠️ {addPlayerError}</div>}
+              <button style={{...btnGold,background:"linear-gradient(135deg,#2d5a1b,#4a9e2a)"}} onClick={handleAddPlayer}>
+                ➕ Agregar jugador
+              </button>
+            </div>
+
             <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:12,letterSpacing:1,marginBottom:10}}>JUGADORES REGISTRADOS ({players.length})</p>
             {players.length===0&&<p style={{color:"rgba(245,236,215,0.3)",fontSize:12,textAlign:"center",paddingTop:20}}>No hay jugadores aún</p>}
             {players.map((p,i)=>(
