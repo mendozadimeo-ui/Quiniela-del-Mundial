@@ -13,6 +13,90 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// ─── AUTO-ACTUALIZACIÓN DE RESULTADOS ────────────────────────────────────────
+const FDORG_TOKEN = "1a29849740ad4f14a07581a5f23f5443";
+const WC2026_ID = "2000"; // FIFA World Cup 2026 competition ID en football-data.org
+
+// Mapeo de nombres de equipos de la API a nuestros nombres
+const TEAM_MAP = {
+  "Mexico":"México","Korea Republic":"Corea del Sur","South Africa":"Sudáfrica",
+  "Czechia":"Chequia","Czech Republic":"Chequia","Canada":"Canadá",
+  "Bosnia and Herzegovina":"Bosnia y Herzegovina","Qatar":"Catar","Switzerland":"Suiza",
+  "Brazil":"Brasil","Morocco":"Marruecos","Scotland":"Escocia","Haiti":"Haití",
+  "United States":"EE.UU.","USA":"EE.UU.","Paraguay":"Paraguay","Australia":"Australia",
+  "Turkey":"Turquía","Germany":"Alemania","Curaçao":"Curazao","Curacao":"Curazao",
+  "Ivory Coast":"Costa de Marfil","Côte d'Ivoire":"Costa de Marfil","Ecuador":"Ecuador",
+  "Netherlands":"Países Bajos","Japan":"Japón","Sweden":"Suecia","Tunisia":"Túnez",
+  "Belgium":"Bélgica","Egypt":"Egipto","Iran":"Irán","New Zealand":"Nueva Zelanda",
+  "Spain":"España","Cape Verde":"Cabo Verde","Saudi Arabia":"Arabia Saudita",
+  "Uruguay":"Uruguay","France":"Francia","Senegal":"Senegal","Iraq":"Irak",
+  "Norway":"Noruega","Argentina":"Argentina","Algeria":"Argelia","Austria":"Austria",
+  "Jordan":"Jordania","Portugal":"Portugal","DR Congo":"R.D. del Congo",
+  "Uzbekistan":"Uzbekistán","Colombia":"Colombia","England":"Inglaterra",
+  "Croatia":"Croacia","Ghana":"Ghana","Panama":"Panamá",
+};
+
+function mapTeamName(name) {
+  return TEAM_MAP[name] || name;
+}
+
+async function fetchAndUpdateResults(currentResults, saveDataFn) {
+  try {
+    // Check rate limit header - wait if needed
+    const resp = await fetch(
+      `https://api.football-data.org/v4/competitions/${WC2026_ID}/matches?status=FINISHED`,
+      { headers: { "X-Auth-Token": FDORG_TOKEN } }
+    );
+    
+    if(!resp.ok) {
+      console.log("API error:", resp.status);
+      return null;
+    }
+    
+    const data = await resp.json();
+    if(!data.matches) return null;
+    
+    const updated = {...currentResults};
+    let hasChanges = false;
+    
+    data.matches.forEach(match => {
+      if(match.status !== "FINISHED") return;
+      const home = mapTeamName(match.homeTeam.name);
+      const away = mapTeamName(match.awayTeam.name);
+      const hScore = match.score.fullTime.home;
+      const aScore = match.score.fullTime.away;
+      if(hScore === null || aScore === null) return;
+      
+      // Find matching match ID
+      const found = [...GROUP_MATCHES, ...KNOCKOUT_MATCHES].find(m =>
+        (m.home === home && m.away === away) ||
+        (m.home === away && m.away === home)
+      );
+      
+      if(found) {
+        const isReversed = found.away === home;
+        const newH = isReversed ? String(aScore) : String(hScore);
+        const newA = isReversed ? String(hScore) : String(aScore);
+        
+        if(!updated[found.id] || updated[found.id].h !== newH || updated[found.id].a !== newA) {
+          updated[found.id] = { h: newH, a: newA };
+          hasChanges = true;
+        }
+      }
+    });
+    
+    if(hasChanges) {
+      await saveDataFn("results", updated);
+      console.log("✅ Resultados actualizados desde football-data.org");
+    }
+    
+    return updated;
+  } catch(e) {
+    console.log("Error fetching results:", e.message);
+    return null;
+  }
+}
+
 async function loadData(key){try{const s=await getDoc(doc(db,"quiniela",key));return s.exists()?s.data().value:null;}catch{return null;}}
 async function saveData(key,value){try{await setDoc(doc(db,"quiniela",key),{value});}catch(e){console.error(e);}}
 async function deleteData(key){try{await deleteDoc(doc(db,"quiniela",key));}catch(e){console.error(e);}}
@@ -326,6 +410,18 @@ export default function App(){
   const [countdown,setCountdown]=useState({d:0,h:0,m:0,s:0,match:null});
 
   // Actualizar "now" cada minuto para que el bloqueo sea en tiempo real
+  // Auto-refresh results every 5 minutes
+  useEffect(()=>{
+    const interval = setInterval(async () => {
+      const updated = await fetchAndUpdateResults(results, saveData);
+      if(updated) {
+        setResults(updated);
+        setAdminScores(updated);
+      }
+    }, 5 * 60 * 1000); // cada 5 minutos
+    return () => clearInterval(interval);
+  }, [results]);
+
   useEffect(()=>{
     function tick(){
       const n=new Date();
@@ -357,6 +453,13 @@ export default function App(){
       if(r){setResults(r);setAdminScores(r);}
       if(sp){setAdminSpecial(sp);setAdminSp(sp);}
       if(gs){setGroupStandings(gs);setAdminGS(gs);}
+      // Auto-fetch results from football-data.org
+      const updated = await fetchAndUpdateResults(r||{}, saveData);
+      if(updated) {
+        setResults(updated);
+        setAdminScores(updated);
+      }
+
       try{
         const saved=localStorage.getItem("quiniela_me_fb");
         if(saved){
@@ -1606,7 +1709,12 @@ export default function App(){
         <div style={topBar}>
           <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
           <p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,letterSpacing:2}}>⚙️ ADMIN</p>
-          <span/>
+          <button style={saveBtnStyle} onClick={async()=>{
+            showToast("🔄 Actualizando...", C.granateDk);
+            const updated = await fetchAndUpdateResults(results, saveData);
+            if(updated){setResults(updated);setAdminScores(updated);showToast("✅ Resultados actualizados");}
+            else showToast("⚠️ Sin cambios o error API","#7A4B00");
+          }}>🔄 Sync</button>
         </div>
         <div style={{display:"flex",padding:"8px 10px",gap:6,borderBottom:`1px solid rgba(201,168,76,0.08)`}}>
           {[["resultados","⚽ Resultados"],["jugadores","👥 Jugadores"],["grupos","📊 Grupos"]].map(([t,l])=>(<button key={t} style={adminTab===t?tabOn:tabOff} onClick={()=>setAdminTab(t)}>{l}</button>))}
