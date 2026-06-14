@@ -407,7 +407,6 @@ export default function App(){
   const [newPlayerPass,setNewPlayerPass]=useState("");
   const [addPlayerError,setAddPlayerError]=useState("");
   const [now,setNow]=useState(new Date());
-  const [countdown,setCountdown]=useState({d:0,h:0,m:0,s:0,match:null});
 
   // Actualizar "now" cada minuto para que el bloqueo sea en tiempo real
   // Auto-refresh results every 5 minutes
@@ -423,26 +422,7 @@ export default function App(){
   }, [results]);
 
   useEffect(()=>{
-    function tick(){
-      const n=new Date();
-      setNow(new Date(n));
-      // Find next match
-      const upcoming=ALL_MATCHES
-        .map(m=>({...m,date:MD[m.id]}))
-        .filter(m=>m.date&&m.date>n)
-        .sort((a,b)=>a.date-b.date);
-      if(upcoming.length>0){
-        const next=upcoming[0];
-        const diff=next.date-n;
-        const d=Math.floor(diff/(1000*60*60*24));
-        const h=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-        const m=Math.floor((diff%(1000*60*60))/(1000*60));
-        const s=Math.floor((diff%(1000*60))/1000);
-        setCountdown({d,h,m,s,match:next});
-      }
-    }
-    tick();
-    const t=setInterval(tick,1000);
+    const t=setInterval(()=>setNow(new Date()),60000);
     return()=>clearInterval(t);
   },[]);
 
@@ -710,25 +690,6 @@ export default function App(){
           <p style={{fontFamily:"'Cinzel',serif",fontSize:42,color:C.gold,lineHeight:1,fontWeight:900}}>${pozo}</p>
           <p style={{color:"rgba(245,236,215,0.4)",fontSize:11,marginTop:4}}>{players.length} jugadores × $5 · El campeón se lo lleva todo</p>
         </div>
-        {/* COUNTDOWN */}
-        {countdown.match&&(
-          <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:14,padding:"14px 20px",marginBottom:20,textAlign:"center",width:"100%",maxWidth:300}}>
-            <p style={{color:"rgba(245,236,215,0.4)",fontSize:10,letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>⏱️ Próximo partido</p>
-            <p style={{color:"#F5ECD7",fontSize:12,marginBottom:10,fontWeight:600}}>
-              {FLAGS[countdown.match.home]||"🏳️"} {countdown.match.home} vs {countdown.match.away} {FLAGS[countdown.match.away]||"🏳️"}
-            </p>
-            <div style={{display:"flex",justifyContent:"center",gap:10}}>
-              {[[countdown.d,"DÍAS"],[countdown.h,"HRS"],[countdown.m,"MIN"],[countdown.s,"SEG"]].map(([val,lbl])=>(
-                <div key={lbl} style={{background:"rgba(201,168,76,0.1)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:10,padding:"8px 10px",minWidth:48,textAlign:"center"}}>
-                  <p style={{fontFamily:"'Cinzel',serif",fontSize:22,color:"#C9A84C",lineHeight:1,fontWeight:900}}>{String(val).padStart(2,"0")}</p>
-                  <p style={{fontSize:8,color:"rgba(245,236,215,0.3)",letterSpacing:2,marginTop:3}}>{lbl}</p>
-                </div>
-              ))}
-            </div>
-            <p style={{color:"rgba(245,236,215,0.3)",fontSize:10,marginTop:8}}>{countdown.match.date?countdown.match.date.toLocaleDateString("es",{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit",timeZone:"America/New_York"})+" ET":""}</p>
-          </div>
-        )}
-
         <div style={{display:"flex",gap:10,marginBottom:20}}>
           {[["⚽","104","Partidos"],["🏟️","48","Equipos"],["👥",players.length,"Jugadores"]].map(([ic,n,l])=>(
             <div key={l} style={{background:C.creamFaint,border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 14px",textAlign:"center"}}>
