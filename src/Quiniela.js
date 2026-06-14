@@ -36,60 +36,86 @@ const TEAM_MAP = {
   "Croatia":"Croacia","Ghana":"Ghana","Panama":"Panamá",
 };
 
+// Mapeo de nombres de grupos de la API
+const GROUP_MAP = {
+  "Group A":"A","Group B":"B","Group C":"C","Group D":"D",
+  "Group E":"E","Group F":"F","Group G":"G","Group H":"H",
+  "Group I":"I","Group J":"J","Group K":"K","Group L":"L",
+};
+
 function mapTeamName(name) {
   return TEAM_MAP[name] || name;
 }
 
-async function fetchAndUpdateResults(currentResults, saveDataFn) {
+async function fetchAndUpdateResults(currentResults, currentGroupStandings, saveDataFn) {
   try {
-    // Check rate limit header - wait if needed
     const resp = await fetch(`/api/resultados`);
+    if(!resp.ok){ console.log("API error:", resp.status); return null; }
     
-    if(!resp.ok) {
-      console.log("API error:", resp.status);
-      return null;
-    }
+    const {matches: matchData, standings: standData} = await resp.json();
+
+    // ── RESULTADOS ──────────────────────────────────────────────────────────
+    const updatedResults = {...currentResults};
+    let resultsChanged = false;
     
-    const data = await resp.json();
-    if(!data.matches) return null;
-    
-    const updated = {...currentResults};
-    let hasChanges = false;
-    
-    data.matches.forEach(match => {
+    (matchData?.matches||[]).forEach(match => {
       if(match.status !== "FINISHED") return;
       const home = mapTeamName(match.homeTeam.name);
       const away = mapTeamName(match.awayTeam.name);
       const hScore = match.score.fullTime.home;
       const aScore = match.score.fullTime.away;
       if(hScore === null || aScore === null) return;
-      
-      // Find matching match ID
       const found = [...GROUP_MATCHES, ...KNOCKOUT_MATCHES].find(m =>
-        (m.home === home && m.away === away) ||
-        (m.home === away && m.away === home)
+        (m.home === home && m.away === away)||(m.home === away && m.away === home)
       );
-      
-      if(found) {
+      if(found){
         const isReversed = found.away === home;
         const newH = isReversed ? String(aScore) : String(hScore);
         const newA = isReversed ? String(hScore) : String(aScore);
-        
-        if(!updated[found.id] || updated[found.id].h !== newH || updated[found.id].a !== newA) {
-          updated[found.id] = { h: newH, a: newA };
-          hasChanges = true;
+        if(!updatedResults[found.id]||updatedResults[found.id].h!==newH||updatedResults[found.id].a!==newA){
+          updatedResults[found.id]={h:newH,a:newA};
+          resultsChanged=true;
         }
       }
     });
-    
-    if(hasChanges) {
-      await saveDataFn("results", updated);
-      console.log("✅ Resultados actualizados desde football-data.org");
-    }
-    
-    return updated;
+    if(resultsChanged) await saveDataFn("results", updatedResults);
+
+    // ── TABLA DE GRUPOS ─────────────────────────────────────────────────────
+    const updatedGS = {...currentGroupStandings};
+    let gsChanged = false;
+
+    (standData?.standings||[]).forEach(standing => {
+      if(standing.type !== "TOTAL") return;
+      const grpName = standing.group || "";
+      const grpLetter = GROUP_MAP[grpName];
+      if(!grpLetter) return;
+      
+      if(!updatedGS[grpLetter]) updatedGS[grpLetter] = {};
+      
+      standing.table.forEach(row => {
+        const team = mapTeamName(row.team.name);
+        const newData = {
+          pj: row.playedGames,
+          g:  row.won,
+          e:  row.draw,
+          p:  row.lost,
+          gf: row.goalsFor,
+          gc: row.goalsAgainst,
+          pts:row.points,
+        };
+        const cur = updatedGS[grpLetter][team];
+        if(!cur || JSON.stringify(cur) !== JSON.stringify(newData)){
+          updatedGS[grpLetter][team] = newData;
+          gsChanged = true;
+        }
+      });
+    });
+    if(gsChanged) await saveDataFn("groupstandings", updatedGS);
+
+    console.log(`✅ Sync: resultados=${resultsChanged}, grupos=${gsChanged}`);
+    return { results: updatedResults, groupStandings: updatedGS };
   } catch(e) {
-    console.log("Error fetching results:", e.message);
+    console.log("Error fetching:", e.message);
     return null;
   }
 }
@@ -409,10 +435,12 @@ export default function App(){
   // Auto-refresh results every 5 minutes
   useEffect(()=>{
     const interval = setInterval(async () => {
-      const updated = await fetchAndUpdateResults(results, saveData);
+      const updated = await fetchAndUpdateResults(results, groupStandings, saveData);
       if(updated) {
-        setResults(updated);
-        setAdminScores(updated);
+        setResults(updated.results);
+        setAdminScores(updated.results);
+        setGroupStandings(updated.groupStandings);
+        setAdminGS(updated.groupStandings);
       }
     }, 5 * 60 * 1000); // cada 5 minutos
     return () => clearInterval(interval);
@@ -431,10 +459,12 @@ export default function App(){
       if(sp){setAdminSpecial(sp);setAdminSp(sp);}
       if(gs){setGroupStandings(gs);setAdminGS(gs);}
       // Auto-fetch results from football-data.org
-      const updated = await fetchAndUpdateResults(r||{}, saveData);
+      const updated = await fetchAndUpdateResults(r||{}, gs||{}, saveData);
       if(updated) {
-        setResults(updated);
-        setAdminScores(updated);
+        setResults(updated.results);
+        setAdminScores(updated.results);
+        setGroupStandings(updated.groupStandings);
+        setAdminGS(updated.groupStandings);
       }
 
       try{
@@ -1669,9 +1699,12 @@ export default function App(){
           <p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,letterSpacing:2}}>⚙️ ADMIN</p>
           <button style={saveBtnStyle} onClick={async()=>{
             showToast("🔄 Actualizando...", C.granateDk);
-            const updated = await fetchAndUpdateResults(results, saveData);
-            if(updated){setResults(updated);setAdminScores(updated);showToast("✅ Resultados actualizados");}
-            else showToast("⚠️ Sin cambios o error API","#7A4B00");
+            const updated = await fetchAndUpdateResults(results, groupStandings, saveData);
+            if(updated){
+              setResults(updated.results);setAdminScores(updated.results);
+              setGroupStandings(updated.groupStandings);setAdminGS(updated.groupStandings);
+              showToast("✅ Resultados y grupos actualizados");
+            } else showToast("⚠️ Sin cambios o error API","#7A4B00");
           }}>🔄 Sync</button>
         </div>
         <div style={{display:"flex",padding:"8px 10px",gap:6,borderBottom:`1px solid rgba(201,168,76,0.08)`}}>
