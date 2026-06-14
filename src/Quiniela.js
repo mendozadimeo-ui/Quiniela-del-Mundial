@@ -43,10 +43,7 @@ function mapTeamName(name) {
 async function fetchAndUpdateResults(currentResults, saveDataFn) {
   try {
     // Check rate limit header - wait if needed
-    const resp = await fetch(
-      `https://api.football-data.org/v4/competitions/${WC2026_ID}/matches?status=FINISHED`,
-      { headers: { "X-Auth-Token": FDORG_TOKEN } }
-    );
+    const resp = await fetch(`/api/resultados`);
     
     if(!resp.ok) {
       console.log("API error:", resp.status);
