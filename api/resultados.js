@@ -2,11 +2,10 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   
   const TOKEN = '1a29849740ad4f14a07581a5f23f5443';
-  const BASE = 'https://api.football-data.org/v4/competitions/2000';
+  const BASE = 'https://api.football-data.org/v4/competitions/WC';
   const HEADERS = { 'X-Auth-Token': TOKEN };
 
   try {
-    // Fetch matches and standings in parallel
     const [matchesResp, standingsResp] = await Promise.all([
       fetch(`${BASE}/matches?status=FINISHED`, { headers: HEADERS }),
       fetch(`${BASE}/standings`, { headers: HEADERS }),
