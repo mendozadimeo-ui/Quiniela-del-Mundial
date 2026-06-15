@@ -955,11 +955,23 @@ export default function App(){
               <table style={{width:"100%",borderCollapse:"collapse"}}>
                 <thead><tr style={{background:"rgba(0,0,0,0.2)"}}>{["Equipo","PJ","G","E","P","GF","GC","Pts"].map(h=>(<th key={h} style={{padding:"6px 4px",fontSize:9,color:"rgba(245,236,215,0.4)",letterSpacing:1,textAlign:h==="Equipo"?"left":"center"}}>{h}</th>))}</tr></thead>
                 <tbody>
-                  {teams.map((team,ti)=>{
+                  {[...teams].sort((a,b)=>{
+                    const pa=gs[a]||{pts:0,gf:0,gc:0,g:0};
+                    const pb=gs[b]||{pts:0,gf:0,gc:0,g:0};
+                    if(pb.pts!==pa.pts)return pb.pts-pa.pts;
+                    const difA=(pa.gf-pa.gc),difB=(pb.gf-pb.gc);
+                    if(difB!==difA)return difB-difA;
+                    if(pb.gf!==pa.gf)return pb.gf-pa.gf;
+                    return pb.g-pa.g;
+                  }).map((team,ti)=>{
                     const td=gs[team]||{pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0};
                     return(
                       <tr key={team} style={{borderTop:"1px solid rgba(255,255,255,0.04)",background:ti===0||ti===1?"rgba(74,94,58,0.08)":"transparent"}}>
-                        <td style={{padding:"8px 8px"}}><div style={{display:"flex",alignItems:"center",gap:6}}><Flag name={team}/><span style={{fontSize:11,color:C.cream}}>{team}</span>{(ti===0||ti===1)&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>→ Octavos</span>}</div></td>
+                        <td style={{padding:"8px 8px"}}><div style={{display:"flex",alignItems:"center",gap:6}}>
+                          <span style={{fontSize:9,color:ti===0||ti===1?"#6B8A52":"rgba(245,236,215,0.3)",fontWeight:700,minWidth:12}}>#{ti+1}</span>
+                          <Flag name={team}/><span style={{fontSize:11,color:C.cream}}>{team}</span>
+                          {(ti===0||ti===1)&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>→ Octavos</span>}
+                        </div></td>
                         {[td.pj,td.g,td.e,td.p,td.gf,td.gc,td.pts].map((v,vi)=>(<td key={vi} style={{textAlign:"center",fontSize:12,color:vi===6?C.gold:C.creamDim,fontWeight:vi===6?700:400,padding:"8px 4px"}}>{v}</td>))}
                       </tr>
                     );
@@ -1359,10 +1371,13 @@ export default function App(){
               {Object.entries(GROUPS).map(([grp,teams])=>{
                 const gs=groupStandings[grp]||{};
                 const sorted=[...teams].sort((a,b)=>{
-                  const pa=gs[a]||{pts:0,gf:0,gc:0};
-                  const pb=gs[b]||{pts:0,gf:0,gc:0};
+                  const pa=gs[a]||{pts:0,gf:0,gc:0,g:0};
+                  const pb=gs[b]||{pts:0,gf:0,gc:0,g:0};
                   if(pb.pts!==pa.pts)return pb.pts-pa.pts;
-                  return(pb.gf-pb.gc)-(pa.gf-pa.gc);
+                  const difA=(pa.gf-pa.gc),difB=(pb.gf-pb.gc);
+                  if(difB!==difA)return difB-difA;
+                  if(pb.gf!==pa.gf)return pb.gf-pa.gf;
+                  return pb.g-pa.g;
                 });
                 return(
                   <div key={grp} style={{background:"rgba(92,26,39,0.1)",border:"1px solid rgba(201,168,76,0.08)",borderRadius:8,padding:"6px 8px"}}>
