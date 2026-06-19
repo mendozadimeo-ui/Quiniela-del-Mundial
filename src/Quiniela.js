@@ -124,7 +124,9 @@ async function fetchAndUpdateResults(currentResults, currentGroupStandings, save
                             <td style={{padding:"8px 8px"}}><div style={{display:"flex",alignItems:"center",gap:6}}>
                               <span style={{fontSize:9,color:ti===0||ti===1?"#6B8A52":"rgba(245,236,215,0.3)",fontWeight:700,minWidth:12}}>#{ti+1}</span>
                               <Flag name={team}/><span style={{fontSize:11,color:C.cream}}>{team}</span>
-                              {(ti===0||ti===1)&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>→ Octavos</span>}
+                              {ti===0&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>✅ 32avos</span>}
+                              {ti===1&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>✅ 32avos</span>}
+                              {ti===2&&<span style={{fontSize:8,background:"rgba(201,168,76,0.3)",color:"#C9A84C",padding:"1px 5px",borderRadius:8}}>⭐ Mejor 3ro?</span>}
                             </div></td>
                             {[td.pj,td.g,td.e,td.p,td.gf,td.gc,td.pts].map((v,vi)=>(<td key={vi} style={{textAlign:"center",fontSize:12,color:vi===6?C.gold:C.creamDim,fontWeight:vi===6?700:400,padding:"8px 4px"}}>{v}</td>))}
                           </tr>
@@ -135,7 +137,10 @@ async function fetchAndUpdateResults(currentResults, currentGroupStandings, save
                 </div>
               );
             })}
-            <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center",marginTop:8}}>Los 2 primeros de cada grupo avanzan · Actualizado automáticamente</p>
+            <div style={{marginTop:8,padding:"10px 12px",background:"rgba(201,168,76,0.04)",border:`1px solid ${C.border}`,borderRadius:10}}>
+              <p style={{color:"rgba(245,236,215,0.3)",fontSize:10,textAlign:"center",marginBottom:4}}>📋 Formato Mundial 2026 — 48 equipos</p>
+              <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center"}}>✅ Top 2 de cada grupo → 32avos · ⭐ 8 mejores terceros también clasifican</p>
+            </div>
           </div>
         )}
 
@@ -596,6 +601,9 @@ export default function App(){
         setAdminScores(updated.results);
         setGroupStandings(updated.groupStandings);
         setAdminGS(updated.groupStandings);
+      } else if(r&&Object.keys(r).length>0) {
+        // If API fails, recalculate from stored results
+        // (recalcGroupStandings is called after component mounts)
       }
 
       try{
@@ -607,10 +615,30 @@ export default function App(){
           if(picks)setMyPicks(picks);if(special)setMySpecial(special);
         }
       }catch{}
+      // Recalculate group standings from existing results if no API update
+      if(r && Object.keys(r).length > 0) {
+        // Will be called after state updates
+        setTimeout(()=>{
+          // This triggers recalc on mount
+        }, 100);
+      }
       setLoading(false);
     }
     init();
   },[]);
+
+  // Recalculate group standings whenever results change
+  useEffect(()=>{
+    if(Object.keys(results).length===0)return;
+    const newGS = recalcGroupStandings(results);
+    // Only update if different from current
+    const isDifferent = JSON.stringify(newGS) !== JSON.stringify(groupStandings);
+    if(isDifferent){
+      setGroupStandings(newGS);
+      setAdminGS(newGS);
+      saveData("groupstandings", newGS);
+    }
+  },[results]);
 
   // Chat real-time listener
   useEffect(()=>{
@@ -1189,7 +1217,9 @@ export default function App(){
                             <td style={{padding:"8px 8px"}}><div style={{display:"flex",alignItems:"center",gap:6}}>
                               <span style={{fontSize:9,color:ti===0||ti===1?"#6B8A52":"rgba(245,236,215,0.3)",fontWeight:700,minWidth:12}}>#{ti+1}</span>
                               <Flag name={team}/><span style={{fontSize:11,color:C.cream}}>{team}</span>
-                              {(ti===0||ti===1)&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>→ Octavos</span>}
+                              {ti===0&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>✅ 32avos</span>}
+                              {ti===1&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>✅ 32avos</span>}
+                              {ti===2&&<span style={{fontSize:8,background:"rgba(201,168,76,0.3)",color:"#C9A84C",padding:"1px 5px",borderRadius:8}}>⭐ Mejor 3ro?</span>}
                             </div></td>
                             {[td.pj,td.g,td.e,td.p,td.gf,td.gc,td.pts].map((v,vi)=>(<td key={vi} style={{textAlign:"center",fontSize:12,color:vi===6?C.gold:C.creamDim,fontWeight:vi===6?700:400,padding:"8px 4px"}}>{v}</td>))}
                           </tr>
@@ -1200,7 +1230,10 @@ export default function App(){
                 </div>
               );
             })}
-            <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center",marginTop:8}}>Los 2 primeros de cada grupo avanzan · Actualizado automáticamente</p>
+            <div style={{marginTop:8,padding:"10px 12px",background:"rgba(201,168,76,0.04)",border:`1px solid ${C.border}`,borderRadius:10}}>
+              <p style={{color:"rgba(245,236,215,0.3)",fontSize:10,textAlign:"center",marginBottom:4}}>📋 Formato Mundial 2026 — 48 equipos</p>
+              <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center"}}>✅ Top 2 de cada grupo → 32avos · ⭐ 8 mejores terceros también clasifican</p>
+            </div>
           </div>
         )}
 
@@ -1308,7 +1341,8 @@ export default function App(){
                         <td style={{padding:"8px 8px"}}><div style={{display:"flex",alignItems:"center",gap:6}}>
                           <span style={{fontSize:9,color:ti===0||ti===1?"#6B8A52":"rgba(245,236,215,0.3)",fontWeight:700,minWidth:12}}>#{ti+1}</span>
                           <Flag name={team}/><span style={{fontSize:11,color:C.cream}}>{team}</span>
-                          {(ti===0||ti===1)&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>→ Octavos</span>}
+                          {(ti===0||ti===1)&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>✅ 32avos</span>}
+                        {ti===2&&<span style={{fontSize:8,background:"rgba(201,168,76,0.3)",color:"#C9A84C",padding:"1px 5px",borderRadius:8}}>⭐ 3ro</span>}
                         </div></td>
                         {[td.pj,td.g,td.e,td.p,td.gf,td.gc,td.pts].map((v,vi)=>(<td key={vi} style={{textAlign:"center",fontSize:12,color:vi===6?C.gold:C.creamDim,fontWeight:vi===6?700:400,padding:"8px 4px"}}>{v}</td>))}
                       </tr>
@@ -1319,7 +1353,10 @@ export default function App(){
             </div>
           );
         })}
-        <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center",marginTop:8}}>Tabla actualizada por el admin · Los 2 primeros de cada grupo avanzan</p>
+        <div style={{marginTop:8,padding:"10px 12px",background:"rgba(201,168,76,0.04)",border:"1px solid rgba(201,168,76,0.15)",borderRadius:10}}>
+          <p style={{color:"rgba(245,236,215,0.3)",fontSize:10,textAlign:"center",marginBottom:4}}>📋 Formato Mundial 2026 — 48 equipos</p>
+          <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center"}}>✅ Top 2 de cada grupo → 32avos · ⭐ 8 mejores terceros también clasifican</p>
+        </div>
       </div>
     </div>
   );
