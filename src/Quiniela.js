@@ -939,18 +939,30 @@ export default function App(){
           ))}
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:10,width:"100%",maxWidth:300,marginBottom:20}}>
-          <button style={btnGold} onClick={()=>setScreen("join")}>🙋 Unirme / Ingresar</button>
-          <button style={btnOutline} onClick={()=>setScreen("standings")}>🏆 Tabla de participantes</button>
-          <button style={btnOutline} onClick={()=>setScreen("bracket")}>🏅 Bracket eliminatorio</button>
-          <button style={btnOutline} onClick={()=>setScreen("chart")}>📈 Gráfica de posiciones</button>
-          {me&&<button style={btnOutline} onClick={()=>setScreen("h2h")}>⚔️ Head to Head</button>}
-          {me&&<button style={btnOutline} onClick={()=>setScreen("profile")}>👤 Mi perfil y estadísticas</button>}
-          <button style={{...btnOutline,position:"relative"}} onClick={()=>{markChatRead();setScreen("chat");}}>
-            💬 Chat del grupo
-            {chatUnread>0&&<span style={{position:"absolute",top:-6,right:-6,background:"#ef4444",color:"#fff",borderRadius:"50%",width:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{chatUnread}</span>}
-          </button>
-          <button style={btnOutline} onClick={()=>{loadAllPicks();setScreen("allPicks");}}>🎯 Ver pronósticos de todos</button>
-          <button style={btnOutline} onClick={()=>setScreen("groupTable")}>📊 Tabla de grupos</button>
+          {!me ? (
+            <>
+              <button style={btnGold} onClick={()=>setScreen("join")}>🙋 Unirme / Ingresar</button>
+              <button style={{...btnOutline,fontSize:12,opacity:0.7}} onClick={()=>setScreen("standings")}>👀 Ver tabla de posiciones</button>
+            </>
+          ) : (
+            <>
+              <div style={{background:"rgba(201,168,76,0.08)",border:`1px solid ${C.border}`,borderRadius:12,padding:"10px 14px",textAlign:"center",marginBottom:4}}>
+                <p style={{fontSize:10,color:"rgba(245,236,215,0.4)",letterSpacing:2,marginBottom:2}}>BIENVENIDO</p>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:16,color:C.gold,fontWeight:700}}>{me.name}</p>
+              </div>
+              <button style={btnGold} onClick={()=>setScreen("picks")}>✏️ Mis pronósticos</button>
+              <button style={btnOutline} onClick={()=>setScreen("standings")}>🏆 Tabla de participantes</button>
+              <button style={btnOutline} onClick={()=>setScreen("groupBracket")}>🏟️ Grupos & Bracket</button>
+              <button style={btnOutline} onClick={()=>setScreen("profileH2H")}>👤 Mi perfil & H2H</button>
+              <button style={btnOutline} onClick={()=>setScreen("chart")}>📈 Gráfica de posiciones</button>
+              <button style={btnOutline} onClick={()=>{loadAllPicks();setScreen("allPicks");}}>🎯 Ver pronósticos de todos</button>
+              <button style={{...btnOutline,position:"relative"}} onClick={()=>{markChatRead();setScreen("chat");}}>
+                💬 Chat del grupo
+                {chatUnread>0&&<span style={{position:"absolute",top:-6,right:-6,background:"#ef4444",color:"#fff",borderRadius:"50%",width:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{chatUnread}</span>}
+              </button>
+              <button style={{...btnOutline,fontSize:12,color:"rgba(245,236,215,0.4)",borderColor:"rgba(255,255,255,0.06)"}} onClick={()=>{setMe(null);localStorage.removeItem("quiniela_me_fb");}}>🚪 Cerrar sesión</button>
+            </>
+          )}
         </div>
         <div style={{background:`linear-gradient(135deg,${C.creamFaint},rgba(74,94,58,0.06))`,border:`1px solid ${C.border}`,borderRadius:14,padding:"14px 16px",maxWidth:300,width:"100%",marginBottom:16}}>
           <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:4,color:C.gold,textAlign:"center",marginBottom:12}}>SISTEMA DE PUNTOS</p>
