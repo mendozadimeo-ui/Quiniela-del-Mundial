@@ -932,7 +932,32 @@ export default function App(){
           <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center"}}>2pts ganador · 3pts exacto · 10pts campeón · 8pts goleador</p>
         </div>
       </div>
-      {me&&<div style={{padding:"0 10px"}}><button style={btnGold} onClick={()=>setScreen("picks")}>✏️ Mis pronósticos</button></div>}
+      {me&&<div style={{padding:"0 10px",display:"flex",flexDirection:"column",gap:8}}>
+        {(()=>{
+          const myPos=standings.findIndex(p=>p.id===me.id)+1;
+          const myPts=standings.find(p=>p.id===me.id)?.pts||0;
+          const total=players.length;
+          const emoji=myPos===1?"🥇":myPos===2?"🥈":myPos===3?"🥉":"⚽";
+          const apodo=myPos===1?"Montado en la Cima 🚌":myPos===2?"Tiene el Palo Parao 👀":myPos===total?"Más Perdido que el Hijo de Lindbergh 🧳":myPos===total-1?"En la Cama del Perro 🔌":"";
+          const msg=`${emoji} *Quiniela Tercer Mundo FC - Mundial 2026*
+
+👤 ${me.name}
+📊 Posición: #${myPos} de ${total}
+🏆 Puntos: ${myPts}pts${apodo?`
+🎭 ${apodo}`:""}
+
+¡Únete en: https://quiniela-del-mundial.vercel.app`;
+          const url=`https://wa.me/?text=${encodeURIComponent(msg)}`;
+          return(
+            <a href={url} target="_blank" rel="noopener noreferrer" style={{display:"block",textDecoration:"none"}}>
+              <div style={{background:"linear-gradient(135deg,#128C7E,#25D366)",color:"#fff",padding:"13px 20px",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",width:"100%",fontFamily:"'Cinzel',serif",letterSpacing:1,textAlign:"center"}}>
+                📲 Compartir mi posición
+              </div>
+            </a>
+          );
+        })()}
+        <button style={btnGold} onClick={()=>setScreen("picks")}>✏️ Mis pronósticos</button>
+      </div>}
     </div>
   );
 
@@ -1528,6 +1553,30 @@ export default function App(){
             </div>
           )}
 
+          {/* Compartir por WhatsApp */}
+          {me&&standings.length>0&&(()=>{
+            const myPos=standings.findIndex(p=>p.id===me.id)+1;
+            const myPts=standings.find(p=>p.id===me.id)?.pts||0;
+            const total=players.length;
+            const emoji=myPos===1?"🥇":myPos===2?"🥈":myPos===3?"🥉":"⚽";
+            const apodo=myPos===1?"Montado en la Cima 🚌":myPos===2?"Tiene el Palo Parao 👀":myPos===total?"Más Perdido que el Hijo de Lindbergh 🧳":myPos===total-1?"En la Cama del Perro 🔌":"";
+            const msg=`${emoji} *Quiniela Tercer Mundo FC - Mundial 2026*
+
+👤 ${me.name}
+📊 Posición: #${myPos} de ${total}
+🏆 Puntos: ${myPts}pts${apodo?`
+🎭 ${apodo}`:""}
+
+¡Únete en: https://quiniela-del-mundial.vercel.app`;
+            const url=`https://wa.me/?text=${encodeURIComponent(msg)}`;
+            return(
+              <a href={url} target="_blank" rel="noopener noreferrer" style={{display:"block",textDecoration:"none",marginBottom:8}}>
+                <div style={{background:"linear-gradient(135deg,#128C7E,#25D366)",color:"#fff",border:"none",padding:"13px 20px",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",width:"100%",fontFamily:"'Cinzel',serif",letterSpacing:1,textAlign:"center"}}>
+                  📲 Compartir mi posición por WhatsApp
+                </div>
+              </a>
+            );
+          })()}
           <button style={btnGold} onClick={()=>setScreen("picks")}>✏️ Ir a mis pronósticos</button>
         </div>
       </div>
