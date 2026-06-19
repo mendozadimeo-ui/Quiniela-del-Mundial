@@ -80,7 +80,136 @@ async function fetchAndUpdateResults(currentResults, currentGroupStandings, save
     });
     if(resultsChanged) await saveDataFn("results", updatedResults);
 
-    // ── TABLA DE GRUPOS ─────────────────────────────────────────────────────
+    // ── GRUPOS & BRACKET ──────────────────────────────────────────────────────
+  if(screen==="groupBracket"){
+    return(
+      <div style={{...pageRoot,paddingBottom:40}}><GF/>
+        <div style={topBar}>
+          <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
+          <p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,letterSpacing:2}}>🏟️ GRUPOS & BRACKET</p>
+          <span/>
+        </div>
+        {/* Tabs */}
+        <div style={{display:"flex",padding:"8px 10px",gap:6,borderBottom:`1px solid rgba(201,168,76,0.08)`}}>
+          {[["grupos","📊 Tabla de Grupos"],["bracket","🏅 Bracket"]].map(([t,l])=>(
+            <button key={t} style={groupBracketTab===t?tabOn:tabOff} onClick={()=>setGroupBracketTab(t)}>{l}</button>
+          ))}
+        </div>
+
+        {/* TABLA DE GRUPOS */}
+        {groupBracketTab==="grupos"&&(
+          <div style={{padding:"10px"}}>
+            {Object.entries(GROUPS).map(([grp,teams])=>{
+              const gs=groupStandings[grp]||{};
+              return(
+                <div key={grp} style={{marginBottom:14,background:"rgba(92,26,39,0.1)",border:`1px solid ${C.border}`,borderRadius:13,overflow:"hidden"}}>
+                  <div style={{background:"rgba(201,168,76,0.12)",padding:"8px 12px",borderBottom:`1px solid ${C.border}`}}>
+                    <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:13,letterSpacing:2}}>GRUPO {grp}</p>
+                  </div>
+                  <table style={{width:"100%",borderCollapse:"collapse"}}>
+                    <thead><tr style={{background:"rgba(0,0,0,0.2)"}}>{["Equipo","PJ","G","E","P","GF","GC","Pts"].map(h=>(<th key={h} style={{padding:"6px 4px",fontSize:9,color:"rgba(245,236,215,0.4)",letterSpacing:1,textAlign:h==="Equipo"?"left":"center"}}>{h}</th>))}</tr></thead>
+                    <tbody>
+                      {[...teams].sort((a,b)=>{
+                        const pa=gs[a]||{pts:0,gf:0,gc:0,g:0};
+                        const pb=gs[b]||{pts:0,gf:0,gc:0,g:0};
+                        if(pb.pts!==pa.pts)return pb.pts-pa.pts;
+                        const difA=(pa.gf-pa.gc),difB=(pb.gf-pb.gc);
+                        if(difB!==difA)return difB-difA;
+                        if(pb.gf!==pa.gf)return pb.gf-pa.gf;
+                        return pb.g-pa.g;
+                      }).map((team,ti)=>{
+                        const td=gs[team]||{pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0};
+                        return(
+                          <tr key={team} style={{borderTop:"1px solid rgba(255,255,255,0.04)",background:ti===0||ti===1?"rgba(74,94,58,0.08)":"transparent"}}>
+                            <td style={{padding:"8px 8px"}}><div style={{display:"flex",alignItems:"center",gap:6}}>
+                              <span style={{fontSize:9,color:ti===0||ti===1?"#6B8A52":"rgba(245,236,215,0.3)",fontWeight:700,minWidth:12}}>#{ti+1}</span>
+                              <Flag name={team}/><span style={{fontSize:11,color:C.cream}}>{team}</span>
+                              {(ti===0||ti===1)&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>→ Octavos</span>}
+                            </div></td>
+                            {[td.pj,td.g,td.e,td.p,td.gf,td.gc,td.pts].map((v,vi)=>(<td key={vi} style={{textAlign:"center",fontSize:12,color:vi===6?C.gold:C.creamDim,fontWeight:vi===6?700:400,padding:"8px 4px"}}>{v}</td>))}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })}
+            <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center",marginTop:8}}>Los 2 primeros de cada grupo avanzan · Actualizado automáticamente</p>
+          </div>
+        )}
+
+        {/* BRACKET */}
+        {groupBracketTab==="bracket"&&(()=>{
+          const getWinner=(matchId)=>{
+            const r=results[matchId];
+            if(!r||r.h===""||r.a==="")return null;
+            const m=ALL_MATCHES.find(x=>x.id===matchId);
+            if(!m)return null;
+            const h=parseInt(r.h),a=parseInt(r.a);
+            if(h>a)return m.home;if(a>h)return m.away;return null;
+          };
+          const champion=getWinner("FINAL");
+          const MatchBox=({id,label})=>{
+            const m=ALL_MATCHES.find(x=>x.id===id);
+            const r=results[id];
+            const hasResult=r&&r.h!=="";
+            const winner=getWinner(id);
+            if(!m)return null;
+            return(
+              <div style={{background:"rgba(92,26,39,0.2)",border:`1px solid ${hasResult?C.gold:"rgba(201,168,76,0.15)"}`,borderRadius:8,padding:"6px 8px",minWidth:130,marginBottom:4}}>
+                {label&&<p style={{fontSize:8,color:"rgba(245,236,215,0.3)",letterSpacing:2,marginBottom:4,textTransform:"uppercase"}}>{label}</p>}
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                  <span style={{fontSize:10,color:winner===m.home?"#22c55e":C.cream,fontWeight:winner===m.home?700:400,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{FLAGS[m.home]||"🏳️"} {m.home}</span>
+                  <span style={{fontSize:12,color:C.gold,fontFamily:"'Cinzel',serif",fontWeight:700,marginLeft:6,minWidth:16,textAlign:"right"}}>{hasResult?r.h:"—"}</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontSize:10,color:winner===m.away?"#22c55e":C.cream,fontWeight:winner===m.away?700:400,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{FLAGS[m.away]||"🏳️"} {m.away}</span>
+                  <span style={{fontSize:12,color:C.gold,fontFamily:"'Cinzel',serif",fontWeight:700,marginLeft:6,minWidth:16,textAlign:"right"}}>{hasResult?r.a:"—"}</span>
+                </div>
+              </div>
+            );
+          };
+          return(
+            <div style={{padding:"10px",overflowX:"auto"}}>
+              <div style={{textAlign:"center",marginBottom:16}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:10,letterSpacing:4,color:"rgba(201,168,76,0.5)",marginBottom:8}}>CAMPEÓN MUNDIAL 2026</p>
+                <div style={{background:champion?"linear-gradient(135deg,rgba(201,168,76,0.3),rgba(201,168,76,0.1))":"rgba(92,26,39,0.15)",border:`1px solid ${champion?C.gold:"rgba(201,168,76,0.12)"}`,borderRadius:8,padding:"10px 16px",maxWidth:160,margin:"0 auto",textAlign:"center",animation:champion?"glow 2s ease-in-out infinite":"none"}}>
+                  <p style={{fontSize:champion?14:11,color:champion?C.gold:"rgba(245,236,215,0.25)",fontWeight:900,fontFamily:"'Cinzel',serif"}}>{champion?`🏆 ${FLAGS[champion]||""} ${champion}`:"Por definir"}</p>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>FINAL & 3ER LUGAR</p>
+                <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
+                  <MatchBox id="FINAL"/><MatchBox id="THIRD"/>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>SEMIFINALES</p>
+                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+                  <MatchBox id="SF_1" label="SF1"/><MatchBox id="SF_2" label="SF2"/><MatchBox id="SF_3" label="SF3"/>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>CUARTOS</p>
+                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+                  {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6"].map(id=>(<MatchBox key={id} id={id} label={id.replace("_","")}/>))}
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>RONDA DE 32</p>
+                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+                  {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12"].map(id=>(<MatchBox key={id} id={id} label={id.replace("R32_","R")}/>))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+    );
+  }
+
+  // ── TABLA DE GRUPOS ─────────────────────────────────────────────────────
     const updatedGS = {...currentGroupStandings};
     let gsChanged = false;
 
@@ -408,6 +537,8 @@ export default function App(){
   const [allPicksData,setAllPicksData]=useState(null);
   const [allPicksLoading,setAllPicksLoading]=useState(false);
   const [expandedMatch,setExpandedMatch]=useState(null);
+  const [groupBracketTab,setGroupBracketTab]=useState("grupos");
+  const [profileH2HTab,setProfileH2HTab]=useState("profile");
   const [selectingCountry,setSelectingCountry]=useState(false);
   const [chartData,setChartData]=useState(null);
   const [chartLoaded,setChartLoaded]=useState(false);
@@ -1014,6 +1145,135 @@ export default function App(){
     </div>
   );
 
+  // ── GRUPOS & BRACKET ──────────────────────────────────────────────────────
+  if(screen==="groupBracket"){
+    return(
+      <div style={{...pageRoot,paddingBottom:40}}><GF/>
+        <div style={topBar}>
+          <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
+          <p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,letterSpacing:2}}>🏟️ GRUPOS & BRACKET</p>
+          <span/>
+        </div>
+        {/* Tabs */}
+        <div style={{display:"flex",padding:"8px 10px",gap:6,borderBottom:`1px solid rgba(201,168,76,0.08)`}}>
+          {[["grupos","📊 Tabla de Grupos"],["bracket","🏅 Bracket"]].map(([t,l])=>(
+            <button key={t} style={groupBracketTab===t?tabOn:tabOff} onClick={()=>setGroupBracketTab(t)}>{l}</button>
+          ))}
+        </div>
+
+        {/* TABLA DE GRUPOS */}
+        {groupBracketTab==="grupos"&&(
+          <div style={{padding:"10px"}}>
+            {Object.entries(GROUPS).map(([grp,teams])=>{
+              const gs=groupStandings[grp]||{};
+              return(
+                <div key={grp} style={{marginBottom:14,background:"rgba(92,26,39,0.1)",border:`1px solid ${C.border}`,borderRadius:13,overflow:"hidden"}}>
+                  <div style={{background:"rgba(201,168,76,0.12)",padding:"8px 12px",borderBottom:`1px solid ${C.border}`}}>
+                    <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:13,letterSpacing:2}}>GRUPO {grp}</p>
+                  </div>
+                  <table style={{width:"100%",borderCollapse:"collapse"}}>
+                    <thead><tr style={{background:"rgba(0,0,0,0.2)"}}>{["Equipo","PJ","G","E","P","GF","GC","Pts"].map(h=>(<th key={h} style={{padding:"6px 4px",fontSize:9,color:"rgba(245,236,215,0.4)",letterSpacing:1,textAlign:h==="Equipo"?"left":"center"}}>{h}</th>))}</tr></thead>
+                    <tbody>
+                      {[...teams].sort((a,b)=>{
+                        const pa=gs[a]||{pts:0,gf:0,gc:0,g:0};
+                        const pb=gs[b]||{pts:0,gf:0,gc:0,g:0};
+                        if(pb.pts!==pa.pts)return pb.pts-pa.pts;
+                        const difA=(pa.gf-pa.gc),difB=(pb.gf-pb.gc);
+                        if(difB!==difA)return difB-difA;
+                        if(pb.gf!==pa.gf)return pb.gf-pa.gf;
+                        return pb.g-pa.g;
+                      }).map((team,ti)=>{
+                        const td=gs[team]||{pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0};
+                        return(
+                          <tr key={team} style={{borderTop:"1px solid rgba(255,255,255,0.04)",background:ti===0||ti===1?"rgba(74,94,58,0.08)":"transparent"}}>
+                            <td style={{padding:"8px 8px"}}><div style={{display:"flex",alignItems:"center",gap:6}}>
+                              <span style={{fontSize:9,color:ti===0||ti===1?"#6B8A52":"rgba(245,236,215,0.3)",fontWeight:700,minWidth:12}}>#{ti+1}</span>
+                              <Flag name={team}/><span style={{fontSize:11,color:C.cream}}>{team}</span>
+                              {(ti===0||ti===1)&&<span style={{fontSize:8,background:"rgba(74,94,58,0.5)",color:"#6B8A52",padding:"1px 5px",borderRadius:8}}>→ Octavos</span>}
+                            </div></td>
+                            {[td.pj,td.g,td.e,td.p,td.gf,td.gc,td.pts].map((v,vi)=>(<td key={vi} style={{textAlign:"center",fontSize:12,color:vi===6?C.gold:C.creamDim,fontWeight:vi===6?700:400,padding:"8px 4px"}}>{v}</td>))}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })}
+            <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center",marginTop:8}}>Los 2 primeros de cada grupo avanzan · Actualizado automáticamente</p>
+          </div>
+        )}
+
+        {/* BRACKET */}
+        {groupBracketTab==="bracket"&&(()=>{
+          const getWinner=(matchId)=>{
+            const r=results[matchId];
+            if(!r||r.h===""||r.a==="")return null;
+            const m=ALL_MATCHES.find(x=>x.id===matchId);
+            if(!m)return null;
+            const h=parseInt(r.h),a=parseInt(r.a);
+            if(h>a)return m.home;if(a>h)return m.away;return null;
+          };
+          const champion=getWinner("FINAL");
+          const MatchBox=({id,label})=>{
+            const m=ALL_MATCHES.find(x=>x.id===id);
+            const r=results[id];
+            const hasResult=r&&r.h!=="";
+            const winner=getWinner(id);
+            if(!m)return null;
+            return(
+              <div style={{background:"rgba(92,26,39,0.2)",border:`1px solid ${hasResult?C.gold:"rgba(201,168,76,0.15)"}`,borderRadius:8,padding:"6px 8px",minWidth:130,marginBottom:4}}>
+                {label&&<p style={{fontSize:8,color:"rgba(245,236,215,0.3)",letterSpacing:2,marginBottom:4,textTransform:"uppercase"}}>{label}</p>}
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                  <span style={{fontSize:10,color:winner===m.home?"#22c55e":C.cream,fontWeight:winner===m.home?700:400,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{FLAGS[m.home]||"🏳️"} {m.home}</span>
+                  <span style={{fontSize:12,color:C.gold,fontFamily:"'Cinzel',serif",fontWeight:700,marginLeft:6,minWidth:16,textAlign:"right"}}>{hasResult?r.h:"—"}</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontSize:10,color:winner===m.away?"#22c55e":C.cream,fontWeight:winner===m.away?700:400,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{FLAGS[m.away]||"🏳️"} {m.away}</span>
+                  <span style={{fontSize:12,color:C.gold,fontFamily:"'Cinzel',serif",fontWeight:700,marginLeft:6,minWidth:16,textAlign:"right"}}>{hasResult?r.a:"—"}</span>
+                </div>
+              </div>
+            );
+          };
+          return(
+            <div style={{padding:"10px",overflowX:"auto"}}>
+              <div style={{textAlign:"center",marginBottom:16}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:10,letterSpacing:4,color:"rgba(201,168,76,0.5)",marginBottom:8}}>CAMPEÓN MUNDIAL 2026</p>
+                <div style={{background:champion?"linear-gradient(135deg,rgba(201,168,76,0.3),rgba(201,168,76,0.1))":"rgba(92,26,39,0.15)",border:`1px solid ${champion?C.gold:"rgba(201,168,76,0.12)"}`,borderRadius:8,padding:"10px 16px",maxWidth:160,margin:"0 auto",textAlign:"center",animation:champion?"glow 2s ease-in-out infinite":"none"}}>
+                  <p style={{fontSize:champion?14:11,color:champion?C.gold:"rgba(245,236,215,0.25)",fontWeight:900,fontFamily:"'Cinzel',serif"}}>{champion?`🏆 ${FLAGS[champion]||""} ${champion}`:"Por definir"}</p>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>FINAL & 3ER LUGAR</p>
+                <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
+                  <MatchBox id="FINAL"/><MatchBox id="THIRD"/>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>SEMIFINALES</p>
+                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+                  <MatchBox id="SF_1" label="SF1"/><MatchBox id="SF_2" label="SF2"/><MatchBox id="SF_3" label="SF3"/>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>CUARTOS</p>
+                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+                  {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6"].map(id=>(<MatchBox key={id} id={id} label={id.replace("_","")}/>))}
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>RONDA DE 32</p>
+                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+                  {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12"].map(id=>(<MatchBox key={id} id={id} label={id.replace("R32_","R")}/>))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+    );
+  }
+
   // ── TABLA DE GRUPOS ────────────────────────────────────────────────────────
   if(screen==="groupTable")return(
     <div style={{...pageRoot,paddingBottom:40}}><GF/>
@@ -1477,8 +1737,31 @@ export default function App(){
     );
   }
 
+  // ── PERFIL & H2H COMBINADO ────────────────────────────────────────────────
+  if(screen==="profileH2H"&&me){
+    return(
+      <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
+        <div style={topBar}>
+          <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
+          <p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,letterSpacing:2}}>👤 PERFIL & H2H</p>
+          <span/>
+        </div>
+        <div style={{display:"flex",padding:"8px 10px",gap:6,borderBottom:`1px solid rgba(201,168,76,0.08)`}}>
+          {[["profile","👤 Mi Perfil"],["h2h","⚔️ Head to Head"]].map(([t,l])=>(
+            <button key={t} style={profileH2HTab===t?tabOn:tabOff} onClick={()=>setProfileH2HTab(t)}>{l}</button>
+          ))}
+        </div>
+        {profileH2HTab==="profile"&&<ProfileContent me={me} myPicks={myPicks} mySpecial={mySpecial} results={results} adminSpecial={adminSpecial} players={players} standings={standings} loadData={loadData} setScreen={setScreen}/>}
+        {profileH2HTab==="h2h"&&<H2HContent me={me} myPicks={myPicks} mySpecial={mySpecial} results={results} adminSpecial={adminSpecial} players={players} rival={rival} setRival={setRival} h2hData={h2hData} h2hLoading={h2hLoading} loadData={loadData}/>}
+      </div>
+    );
+  }
+
   // ── PROFILE SCREEN ────────────────────────────────────────────────────────
   if(screen==="profile"&&me){
+    return(<div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}<div style={topBar}><button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button><p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,letterSpacing:2}}>👤 MI PERFIL</p><span/></div><ProfileContent me={me} myPicks={myPicks} mySpecial={mySpecial} results={results} adminSpecial={adminSpecial} players={players} standings={standings} loadData={loadData} setScreen={setScreen}/></div>);
+  }
+  if(false&&me){
     // Calculate stats
     const playedMatches=ALL_MATCHES.filter(m=>results[m.id]&&results[m.id].h!=="");
     let exact=0,winner=0,fail=0,totalPts=0,streak=0,bestStreak=0,curStreak=0;
@@ -2088,6 +2371,177 @@ function HomeApodos({players,results,adminSpecial,me,myPicks,mySpecial,loadData}
         name={mostGoals.name} pts={mostGoals.pts}
         color="#34d399" bg="rgba(52,211,153,0.06)" border="rgba(52,211,153,0.2)"
         subtitle={`${mostGoals.goalsHit} goles acertados`}/>}
+    </div>
+  );
+}
+
+function ProfileContent({me,myPicks,mySpecial,results,adminSpecial,players,standings,loadData,setScreen}){
+  const playedMatches=Object.entries(results).filter(([,r])=>r&&r.h!=="");
+  let exact=0,winner=0,fail=0,totalPts=0,myCur=0,myBestStreak=0;
+  playedMatches.forEach(([mid,result])=>{
+    const pick=myPicks[mid]||{h:"",a:""};
+    if(pick.h==="")return;
+    const pts=calcMatchPoints(pick,result);
+    totalPts+=pts;
+    if(pts===3){exact++;myCur++;} else if(pts===2){winner++;myCur++;} else{fail++;myCur=0;}
+    if(myCur>myBestStreak)myBestStreak=myCur;
+  });
+  const specialPts=calcSpecialPoints(mySpecial,adminSpecial);
+  const grandTotal=totalPts+specialPts;
+  const played=playedMatches.filter(([mid])=>{const p=myPicks[mid];return p&&p.h!=="";}).length;
+  const pct=played>0?Math.round(((exact+winner)/played)*100):0;
+  const myRank=standings.findIndex(p=>p.id===me.id)+1||"—";
+  const last5=playedMatches.slice(-5).reverse().map(([mid,result])=>({match:ALL_MATCHES.find(m=>m.id===mid),pick:myPicks[mid]||{h:"",a:""},result,pts:calcMatchPoints(myPicks[mid]||{h:"",a:""},result)})).filter(x=>x.match);
+  const C2={gold:"#C9A84C",cream:"#F5ECD7",creamDim:"rgba(245,236,215,0.6)",granateDk:"#3D0F18",bg:"#1A0A0E",border:"rgba(201,168,76,0.25)",olive:"#4A5E3A",oliveLt:"#6B8A52"};
+  const pozo=players.length*5;
+  return(
+    <div style={{padding:"12px"}}>
+      <div style={{background:"linear-gradient(135deg,rgba(92,26,39,0.4),rgba(92,26,39,0.15))",border:`1px solid ${C2.gold}`,borderRadius:16,padding:"20px 16px",marginBottom:14,textAlign:"center",animation:"glow 3s ease-in-out infinite"}}>
+        <div style={{width:64,height:64,borderRadius:"50%",background:`radial-gradient(circle,${C2.granateDk},${C2.bg})`,border:`2px solid ${C2.gold}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 10px",fontSize:28}}>{me.name[0].toUpperCase()}</div>
+        <p style={{fontFamily:"'Cinzel',serif",fontSize:20,color:C2.gold,fontWeight:900}}>{me.name}</p>
+        <p style={{color:C2.creamDim,fontSize:12,marginTop:4}}>Quiniela Tercer Mundo FC · Mundial 2026</p>
+        <div style={{display:"flex",justifyContent:"center",gap:16,marginTop:12}}>
+          {[[grandTotal,"PUNTOS",C2.gold],[`#${myRank}`,"POSICIÓN",C2.gold],[`${pct}%`,"ACIERTOS",C2.gold]].map(([v,l,c])=>(
+            <div key={l} style={{textAlign:"center"}}>
+              <p style={{fontFamily:"'Cinzel',serif",fontSize:24,color:c,fontWeight:900,lineHeight:1}}>{v}</p>
+              <p style={{fontSize:9,color:"rgba(245,236,215,0.4)",letterSpacing:2,marginTop:2}}>{l}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+        {[["✨","Exactos",exact,"#22c55e"],["✅","Ganador",winner,C2.gold],["❌","Fallos",fail,"#ef4444"],["🔥","Racha actual",myCur,myCur>=3?"#22c55e":C2.creamDim],["⚡","Mejor racha",myBestStreak,C2.gold],["🏆","Pts especiales",specialPts,"#7c3aed"]].map(([ic,lbl,val,col])=>(
+          <div key={lbl} style={{background:"rgba(92,26,39,0.1)",border:"1px solid rgba(201,168,76,0.08)",borderRadius:12,padding:"12px 14px"}}>
+            <p style={{fontSize:18,marginBottom:4}}>{ic}</p>
+            <p style={{fontFamily:"'Cinzel',serif",fontSize:22,color:col,fontWeight:900,lineHeight:1}}>{val}</p>
+            <p style={{color:"rgba(245,236,215,0.4)",fontSize:10,marginTop:4}}>{lbl}</p>
+          </div>
+        ))}
+      </div>
+      <div style={{background:"rgba(92,26,39,0.1)",border:"1px solid rgba(201,168,76,0.08)",borderRadius:12,padding:"14px",marginBottom:14}}>
+        <p style={{fontFamily:"'Cinzel',serif",color:C2.gold,fontSize:12,letterSpacing:2,marginBottom:10}}>🎯 PRONÓSTICOS ESPECIALES</p>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <span style={{color:C2.creamDim,fontSize:12}}>🏆 Campeón:</span>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <span style={{color:mySpecial.champion?C2.cream:"rgba(245,236,215,0.3)",fontSize:12,fontWeight:700}}>{mySpecial.champion||"No ingresado"}</span>
+            {adminSpecial?.champion&&mySpecial.champion===adminSpecial.champion&&<span style={{color:"#22c55e",fontSize:11}}>✨ +10pts</span>}
+          </div>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{color:C2.creamDim,fontSize:12}}>👟 Goleador:</span>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <span style={{color:mySpecial.scorer?C2.cream:"rgba(245,236,215,0.3)",fontSize:12,fontWeight:700}}>{mySpecial.scorer||"No ingresado"}</span>
+            {adminSpecial?.scorer&&mySpecial.scorer===adminSpecial.scorer&&<span style={{color:"#22c55e",fontSize:11}}>✨ +8pts</span>}
+          </div>
+        </div>
+      </div>
+      {last5.length>0&&(
+        <div style={{background:"rgba(92,26,39,0.1)",border:"1px solid rgba(201,168,76,0.08)",borderRadius:12,padding:"14px",marginBottom:14}}>
+          <p style={{fontFamily:"'Cinzel',serif",color:C2.gold,fontSize:12,letterSpacing:2,marginBottom:10}}>📋 ÚLTIMOS PARTIDOS</p>
+          {last5.map((e,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 0",borderBottom:i<last5.length-1?"1px solid rgba(255,255,255,0.04)":"none"}}>
+              <span style={{fontSize:14,minWidth:24,textAlign:"center"}}>{e.pts===3?"✨":e.pts===2?"✅":"❌"}</span>
+              <div style={{flex:1}}>
+                <p style={{fontSize:11,color:C2.cream}}>{FLAGS[e.match?.home]||"🏳️"} {e.match?.home} vs {e.match?.away} {FLAGS[e.match?.away]||"🏳️"}</p>
+                <p style={{fontSize:10,color:"rgba(245,236,215,0.4)",marginTop:2}}>Tú: <strong style={{color:e.pts>0?C2.gold:"rgba(245,236,215,0.5)"}}>{e.pick.h!==""?`${e.pick.h}-${e.pick.a}`:"—"}</strong>{e.result?.h!==""&&<> · Real: <strong style={{color:C2.creamDim}}>{e.result.h}-{e.result.a}</strong></>}</p>
+              </div>
+              <span style={{fontFamily:"'Cinzel',serif",fontSize:16,color:e.pts===3?"#22c55e":e.pts===2?C2.gold:"#ef4444",fontWeight:700}}>{e.pts}pts</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {(()=>{
+        const myPos=standings.findIndex(p=>p.id===me.id)+1;
+        const myPts=standings.find(p=>p.id===me.id)?.pts||0;
+        const total=players.length;
+        const emoji=myPos===1?"🥇":myPos===2?"🥈":myPos===3?"🥉":"⚽";
+        const apodo=myPos===1?"Montado en la Cima 🚌":myPos===2?"Tiene el Palo Parao 👀":myPos===total?"Más Perdido que el Hijo de Lindbergh 🧳":myPos===total-1?"En la Cama del Perro 🔌":"";
+        const msg=`${emoji} *Quiniela Tercer Mundo FC - Mundial 2026*
+
+👤 ${me.name}
+📊 Posición: #${myPos} de ${total}
+🏆 Puntos: ${myPts}pts${apodo?`
+🎭 ${apodo}`:""}
+
+¡Únete en: https://quiniela-del-mundial.vercel.app`;
+        const url=`https://wa.me/?text=${encodeURIComponent(msg)}`;
+        return(<a href={url} target="_blank" rel="noopener noreferrer" style={{display:"block",textDecoration:"none",marginBottom:8}}><div style={{background:"linear-gradient(135deg,#128C7E,#25D366)",color:"#fff",padding:"13px 20px",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",width:"100%",fontFamily:"'Cinzel',serif",letterSpacing:1,textAlign:"center"}}>📲 Compartir mi posición por WhatsApp</div></a>);
+      })()}
+      <button style={{background:"linear-gradient(135deg,#8B5E0A,#C9A84C)",color:"#1A0A0E",border:"none",padding:"13px 20px",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",width:"100%",fontFamily:"'Cinzel',serif",letterSpacing:1}} onClick={()=>setScreen("picks")}>✏️ Ir a mis pronósticos</button>
+    </div>
+  );
+}
+
+function H2HContent({me,myPicks,mySpecial,results,adminSpecial,players,rival,setRival,h2hData,h2hLoading,loadData}){
+  const others=players.filter(p=>p.id!==me.id);
+  if(!rival&&others.length>0)setRival(others[0]);
+  const C2={gold:"#C9A84C",cream:"#F5ECD7",creamDim:"rgba(245,236,215,0.6)",border:"rgba(201,168,76,0.25)"};
+  const inputStyle={width:"100%",background:"rgba(26,10,14,0.6)",border:`1px solid ${C2.border}`,color:C2.cream,padding:"11px 14px",borderRadius:10,fontSize:14,marginBottom:4,fontFamily:"'Barlow',sans-serif"};
+  const labelStyle={display:"block",color:"rgba(245,236,215,0.4)",fontSize:10,letterSpacing:2,textTransform:"uppercase",marginBottom:5,marginTop:12};
+  const Bar=({myVal,rivVal,label})=>{
+    const total=myVal+rivVal||1;
+    const myPct=Math.round((myVal/total)*100);
+    return(
+      <div style={{marginBottom:10}}>
+        <p style={{color:"rgba(245,236,215,0.4)",fontSize:10,textAlign:"center",marginBottom:4,letterSpacing:1}}>{label}</p>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <span style={{fontFamily:"'Cinzel',serif",fontSize:16,color:C2.gold,minWidth:28,textAlign:"right"}}>{myVal}</span>
+          <div style={{flex:1,height:10,borderRadius:5,overflow:"hidden",background:"rgba(255,255,255,0.05)",display:"flex"}}>
+            <div style={{width:`${myPct}%`,background:"linear-gradient(90deg,#8B5E0A,#C9A84C)",transition:"width 0.5s"}}/>
+            <div style={{width:`${100-myPct}%`,background:"linear-gradient(90deg,#5C1A27,#7D2438)",transition:"width 0.5s"}}/>
+          </div>
+          <span style={{fontFamily:"'Cinzel',serif",fontSize:16,color:"#7D2438",minWidth:28}}>{rivVal}</span>
+        </div>
+      </div>
+    );
+  };
+  return(
+    <div style={{padding:"12px"}}>
+      <div style={{background:"rgba(92,26,39,0.15)",border:`1px solid ${C2.border}`,borderRadius:12,padding:"12px",marginBottom:14}}>
+        <p style={{color:"rgba(245,236,215,0.4)",fontSize:10,letterSpacing:2,marginBottom:8}}>ELIGE TU RIVAL</p>
+        <select style={inputStyle} value={rival?.id||""} onChange={e=>{const p=players.find(x=>x.id===e.target.value);setRival(p||null);}}>
+          {others.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+      </div>
+      {rival&&(
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,padding:"14px",background:"linear-gradient(135deg,rgba(201,168,76,0.1),rgba(92,26,39,0.15))",border:`1px solid ${C2.gold}`,borderRadius:14}}>
+          <div style={{textAlign:"center",flex:1}}><p style={{fontFamily:"'Cinzel',serif",fontSize:16,color:C2.gold,fontWeight:900}}>{me.name}</p><p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginTop:2}}>TÚ</p></div>
+          <div style={{textAlign:"center",padding:"6px 12px",background:"rgba(201,168,76,0.15)",borderRadius:20,border:`1px solid ${C2.border}`}}><p style={{fontFamily:"'Cinzel',serif",fontSize:14,color:C2.gold}}>VS</p></div>
+          <div style={{textAlign:"center",flex:1}}><p style={{fontFamily:"'Cinzel',serif",fontSize:16,color:C2.cream,fontWeight:900}}>{rival.name}</p><p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginTop:2}}>RIVAL</p></div>
+        </div>
+      )}
+      {h2hLoading&&<p style={{color:C2.creamDim,textAlign:"center",padding:20}}>Calculando...</p>}
+      {h2hData&&!h2hLoading&&(
+        <>
+          <div style={{display:"flex",gap:8,marginBottom:14,textAlign:"center"}}>
+            {[[h2hData.myWins,"MIS VICTORIAS","#22c55e"],[h2hData.draws,"EMPATES","rgba(245,236,215,0.4)"],[h2hData.rivWins,"SUS VICTORIAS","#ef4444"]].map(([v,l,c])=>(
+              <div key={l} style={{flex:1,background:"rgba(92,26,39,0.1)",border:"1px solid rgba(255,255,255,0.05)",borderRadius:10,padding:"10px 4px"}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:26,color:c,fontWeight:900,lineHeight:1}}>{v}</p>
+                <p style={{fontSize:8,color:"rgba(245,236,215,0.3)",letterSpacing:1,marginTop:4}}>{l}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{background:"rgba(92,26,39,0.1)",border:`1px solid ${C2.border}`,borderRadius:12,padding:"14px",marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:12}}>
+              <span style={{fontSize:11,color:C2.gold,fontWeight:700}}>{me.name}</span>
+              <span style={{fontSize:11,color:"rgba(245,236,215,0.5)"}}>vs</span>
+              <span style={{fontSize:11,color:C2.cream,fontWeight:700}}>{rival?.name}</span>
+            </div>
+            <Bar myVal={h2hData.myPts} rivVal={h2hData.rivPts} label="PUNTOS TOTALES"/>
+            <Bar myVal={h2hData.myExact} rivVal={h2hData.rivExact} label="MARCADORES EXACTOS"/>
+            <Bar myVal={h2hData.myPlayed} rivVal={h2hData.rivPlayed} label="PARTIDOS JUGADOS"/>
+            <Bar myVal={h2hData.myBestStreak} rivVal={h2hData.rivBestStreak} label="MEJOR RACHA"/>
+            <Bar myVal={h2hData.myStreak} rivVal={h2hData.rivStreak} label="RACHA ACTUAL"/>
+          </div>
+          <div style={{background:h2hData.myPts>h2hData.rivPts?"rgba(34,197,94,0.08)":h2hData.myPts<h2hData.rivPts?"rgba(239,68,68,0.08)":"rgba(201,168,76,0.08)",border:`1px solid ${h2hData.myPts>h2hData.rivPts?"rgba(34,197,94,0.3)":h2hData.myPts<h2hData.rivPts?"rgba(239,68,68,0.3)":"rgba(201,168,76,0.3)"}`,borderRadius:12,padding:"12px",textAlign:"center"}}>
+            <p style={{fontSize:24,marginBottom:4}}>{h2hData.myPts>h2hData.rivPts?"😤":h2hData.myPts<h2hData.rivPts?"😬":"🤝"}</p>
+            <p style={{fontFamily:"'Cinzel',serif",fontSize:14,color:h2hData.myPts>h2hData.rivPts?"#22c55e":h2hData.myPts<h2hData.rivPts?"#ef4444":C2.gold,fontWeight:700}}>
+              {h2hData.myPts>h2hData.rivPts?"¡Le estás metiendo mano!":h2hData.myPts<h2hData.rivPts?"Te está comiendo el mandado":"¡Están parejos!"}
+            </p>
+            <p style={{color:"rgba(245,236,215,0.3)",fontSize:11,marginTop:4}}>Diferencia: {Math.abs(h2hData.myPts-h2hData.rivPts)} pts</p>
+          </div>
+        </>
+      )}
     </div>
   );
 }
