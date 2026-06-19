@@ -551,10 +551,63 @@ export default function App(){
     setSaving(false);showToast("✅ Pronósticos guardados");
   }
 
+  function recalcGroupStandings(allResults){
+    const gs={};
+    Object.keys(GROUPS).forEach(grp=>{
+      gs[grp]={};
+      GROUPS[grp].forEach(team=>{
+        gs[grp][team]={pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0};
+      });
+    });
+    // Go through all group matches and calculate
+    GROUP_MATCHES.forEach(match=>{
+      const r=allResults[match.id];
+      if(!r||r.h===""||r.a==="")return;
+      const grp=match.group;
+      const home=match.home;
+      const away=match.away;
+      const hScore=parseInt(r.h);
+      const aScore=parseInt(r.a);
+      if(!gs[grp]||!gs[grp][home]||!gs[grp][away])return;
+      // Home team
+      gs[grp][home].pj++;
+      gs[grp][home].gf+=hScore;
+      gs[grp][home].gc+=aScore;
+      // Away team
+      gs[grp][away].pj++;
+      gs[grp][away].gf+=aScore;
+      gs[grp][away].gc+=hScore;
+      // Result
+      if(hScore>aScore){
+        gs[grp][home].g++;gs[grp][home].pts+=3;
+        gs[grp][away].p++;
+      } else if(aScore>hScore){
+        gs[grp][away].g++;gs[grp][away].pts+=3;
+        gs[grp][home].p++;
+      } else {
+        gs[grp][home].e++;gs[grp][home].pts++;
+        gs[grp][away].e++;gs[grp][away].pts++;
+      }
+    });
+    return gs;
+  }
+
   async function handleSaveResult(matchId){
     const s=adminScores[matchId]||{h:"",a:""};
     const updated={...results,[matchId]:s};
-    setResults(updated);await saveData("results",updated);showToast("✅ Resultado guardado");
+    setResults(updated);
+    await saveData("results",updated);
+    // Auto-recalculate group standings if it's a group match
+    const isGroupMatch=GROUP_MATCHES.some(m=>m.id===matchId);
+    if(isGroupMatch){
+      const newGS=recalcGroupStandings(updated);
+      setGroupStandings(newGS);
+      setAdminGS(newGS);
+      await saveData("groupstandings",newGS);
+      showToast("✅ Resultado y tabla de grupos actualizados");
+    } else {
+      showToast("✅ Resultado guardado");
+    }
   }
 
   async function handleSaveSpecialResults(){setAdminSpecial(adminSp);await saveData("special",adminSp);showToast("✅ Especiales guardados");}
