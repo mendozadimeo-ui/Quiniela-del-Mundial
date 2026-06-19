@@ -167,7 +167,7 @@ const MD={
   C4:new Date("2026-06-20T00:30:00Z"),// Brasil vs Haití 20:30ET Jun19
   D1:new Date("2026-06-13T01:00:00Z"),// EE.UU vs Paraguay 21:00ET Jun12
   D3:new Date("2026-06-19T19:00:00Z"),// EE.UU vs Australia 15:00ET
-  D4:new Date("2026-06-19T03:00:00Z"),// Turquía vs Paraguay 23:00ET Jun18
+  D4:new Date("2026-06-20T00:00:00Z"),// Turquía vs Paraguay 8pm ET Jun19
   E3:new Date("2026-06-20T20:00:00Z"),// Alemania vs Costa de Marfil 16:00ET
   E4:new Date("2026-06-21T00:00:00Z"),// Ecuador vs Curazao 20:00ET Jun20
   F3:new Date("2026-06-20T17:00:00Z"),// Países Bajos vs Suecia 13:00ET
@@ -225,11 +225,11 @@ const MD={
   Especiales:new Date("2026-06-11T12:00:00Z"),
 };
 
-// Bloquea 1 hora antes del partido
+// Bloquea AL INICIO del partido (sin margen de 1 hora)
 function isMatchLocked(matchId){
   const d=MD[matchId];
   if(!d)return false;
-  return new Date()>=new Date(d.getTime()-60*60*1000);
+  return new Date()>=d;
 }
 // Bloquea ronda entera si el primer partido ya está bloqueado
 function isRoundLocked(round){
