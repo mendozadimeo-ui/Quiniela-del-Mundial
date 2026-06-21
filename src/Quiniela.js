@@ -69,10 +69,11 @@ async function fetchAndUpdateResults(currentResults, currentGroupStandings, save
         (m.home === home && m.away === away)||(m.home === away && m.away === home)
       );
       if(found){
-        const isReversed = found.away === home;
-        const newH = isReversed ? String(aScore) : String(hScore);
-        const newA = isReversed ? String(hScore) : String(aScore);
-        if(!updatedResults[found.id]||updatedResults[found.id].h!==newH||updatedResults[found.id].a!==newA){
+        // Solo agregar si NO existe ya — nunca sobreescribir resultados manuales
+        if(!updatedResults[found.id]||updatedResults[found.id].h===""){
+          const isReversed = found.away === home;
+          const newH = isReversed ? String(aScore) : String(hScore);
+          const newA = isReversed ? String(hScore) : String(aScore);
           updatedResults[found.id]={h:newH,a:newA};
           resultsChanged=true;
         }
@@ -1009,8 +1010,9 @@ export default function App(){
           <option value="">— Elige tu país —</option>
           {ALL_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
         </select>
-        <div style={{background:"rgba(245,236,215,0.03)",border:"1px solid rgba(245,236,215,0.06)",borderRadius:10,padding:"10px 12px",margin:"10px 0"}}>
-          <p style={{color:"rgba(245,236,215,0.4)",fontSize:11,lineHeight:1.6}}>💡 <strong style={{color:C.creamDim}}>Primera vez:</strong> escribe tu nombre y elige una clave.<br/><strong style={{color:C.creamDim}}>Ya registrado:</strong> usa el mismo nombre y clave.</p>
+        <div style={{background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:10,padding:"10px 12px",margin:"10px 0"}}>
+          <p style={{color:"#fca5a5",fontSize:12,lineHeight:1.6,fontWeight:700}}>🔒 Registro cerrado</p>
+          <p style={{color:"rgba(245,236,215,0.5)",fontSize:11,lineHeight:1.6,marginTop:4}}>Si ya estás registrado ingresa tu nombre y clave exactamente como los creaste.</p>
         </div>
         {joinError&&<div style={errorBox}>⚠️ {joinError}</div>}
         <button style={btnGold} onClick={handleJoin}>Entrar a la quiniela →</button>
