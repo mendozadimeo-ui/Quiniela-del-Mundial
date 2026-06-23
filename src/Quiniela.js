@@ -266,84 +266,102 @@ const ENTRY_FEE=5;
 // ─── FECHAS EXACTAS DE CADA PARTIDO (UTC) ────────────────────────────────────
 // Se bloquea 1 hora antes del kickoff
 const MD={
-  // Jornada 1 (Jun 11-17) - horarios ET convertidos a UTC (+4h)
-  A1:new Date("2026-06-11T19:00:00Z"),// México vs Sudáfrica 15:00ET
-  A2:new Date("2026-06-12T02:00:00Z"),// Corea del Sur vs Chequia 22:00ET
-  B1:new Date("2026-06-12T19:00:00Z"),// Canadá vs Bosnia 15:00ET
-  B2:new Date("2026-06-13T19:00:00Z"),// Qatar vs Suiza 15:00ET
-  C2:new Date("2026-06-13T17:00:00Z"),// Haití vs Escocia 13:00ET -- wait M5=Haití vs Escocia 21:00ET
-  // Fixing: M5=Haití vs Escocia 21:00ET=01:00UTC Jun14, M7=Brasil vs Marruecos 18:00ET=22:00UTC Jun13
-  C1:new Date("2026-06-13T22:00:00Z"),// Brasil vs Marruecos 18:00ET
-  // C2 = Haití vs Escocia 21:00ET Jun13 = 01:00UTC Jun14
-  D2:new Date("2026-06-14T04:00:00Z"),// Australia vs Turquía 00:00ET Jun14 (BC Place Vancouver)
-  D1:new Date("2026-06-13T01:00:00Z"),// EE.UU vs Paraguay - actually M4=21:00ET Jun12=01:00UTC Jun13
-  E1:new Date("2026-06-14T17:00:00Z"),// Alemania vs Curazao 13:00ET
-  E2:new Date("2026-06-14T23:00:00Z"),// Costa de Marfil vs Ecuador 19:00ET
-  F1:new Date("2026-06-14T20:00:00Z"),// Países Bajos vs Japón 16:00ET
-  F2:new Date("2026-06-15T02:00:00Z"),// Suecia vs Túnez 22:00ET Jun14
-  G1:new Date("2026-06-15T19:00:00Z"),// Bélgica vs Egipto 15:00ET
-  G2:new Date("2026-06-16T01:00:00Z"),// Irán vs Nueva Zelanda 21:00ET Jun15
-  H1:new Date("2026-06-15T16:00:00Z"),// España vs Cabo Verde 12:00ET
-  H2:new Date("2026-06-15T22:00:00Z"),// Arabia Saudita vs Uruguay 18:00ET
-  I1:new Date("2026-06-16T19:00:00Z"),// Francia vs Senegal 15:00ET
-  I2:new Date("2026-06-16T22:00:00Z"),// Irak vs Noruega 18:00ET
-  J1:new Date("2026-06-17T01:00:00Z"),// Argentina vs Argelia 21:00ET Jun16
-  J2:new Date("2026-06-17T04:00:00Z"),// Austria vs Jordania 00:00ET Jun17
-  K1:new Date("2026-06-17T17:00:00Z"),// Portugal vs RD Congo 13:00ET
-  K2:new Date("2026-06-18T02:00:00Z"),// Uzbekistán vs Colombia 22:00ET Jun17
-  L1:new Date("2026-06-17T20:00:00Z"),// Inglaterra vs Croacia 16:00ET
-  L2:new Date("2026-06-17T23:00:00Z"),// Ghana vs Panamá 19:00ET
-  // Jornada 2 (Jun 18-23)
-  A3:new Date("2026-06-18T16:00:00Z"),// Chequia vs Sudáfrica 12:00ET
-  A4:new Date("2026-06-19T01:00:00Z"),// México vs Corea del Sur 21:00ET Jun18
-  B3:new Date("2026-06-18T19:00:00Z"),// Suiza vs Bosnia 15:00ET
-  B4:new Date("2026-06-18T23:00:00Z"),// Canadá vs Qatar 19:00ET
-  C3:new Date("2026-06-19T22:00:00Z"),// Escocia vs Marruecos 18:00ET
-  C4:new Date("2026-06-20T00:30:00Z"),// Brasil vs Haití 20:30ET Jun19
-  D1:new Date("2026-06-13T01:00:00Z"),// EE.UU vs Paraguay 21:00ET Jun12
-  D3:new Date("2026-06-19T19:00:00Z"),// EE.UU vs Australia 15:00ET
-  D4:new Date("2026-06-20T00:00:00Z"),// Turquía vs Paraguay 8pm ET Jun19
-  E3:new Date("2026-06-20T20:00:00Z"),// Alemania vs Costa de Marfil 16:00ET
-  E4:new Date("2026-06-21T00:00:00Z"),// Ecuador vs Curazao 20:00ET Jun20
-  F3:new Date("2026-06-20T17:00:00Z"),// Países Bajos vs Suecia 13:00ET
-  F4:new Date("2026-06-21T04:00:00Z"),// Túnez vs Japón 00:00ET Jun21
-  G3:new Date("2026-06-21T19:00:00Z"),// Bélgica vs Irán 15:00ET
-  G4:new Date("2026-06-22T01:00:00Z"),// Nueva Zelanda vs Egipto 21:00ET Jun21
-  H3:new Date("2026-06-21T16:00:00Z"),// España vs Arabia Saudita 12:00ET
-  H4:new Date("2026-06-21T22:00:00Z"),// Uruguay vs Cabo Verde 18:00ET
-  I3:new Date("2026-06-22T21:00:00Z"),// Noruega vs Senegal 17:00ET -- M41=Noruega vs Senegal 20:00ET
-  I4:new Date("2026-06-22T21:00:00Z"),// Francia vs Irak 17:00ET
-  J3:new Date("2026-06-22T17:00:00Z"),// Argentina vs Austria 13:00ET
-  J4:new Date("2026-06-23T03:00:00Z"),// Jordania vs Argelia 23:00ET Jun22
-  K3:new Date("2026-06-23T20:30:00Z"),// Portugal vs Uzbekistán 16:30ET
-  K4:new Date("2026-06-23T01:00:00Z"),// Colombia vs RD Congo 21:00ET Jun22
-  L3:new Date("2026-06-23T20:00:00Z"),// Inglaterra vs Ghana 16:00ET
-  L4:new Date("2026-06-23T23:00:00Z"),// Panamá vs Croacia 19:00ET
-  // Jornada 3 (Jun 24-27) - simultáneos
-  A5:new Date("2026-06-25T01:00:00Z"),// México vs Chequia 21:00ET Jun24
-  A6:new Date("2026-06-25T01:00:00Z"),// Sudáfrica vs Corea del Sur 21:00ET Jun24
-  B5:new Date("2026-06-24T19:00:00Z"),// Suiza vs Canadá 15:00ET
-  B6:new Date("2026-06-24T19:00:00Z"),// Bosnia vs Qatar 15:00ET
-  C5:new Date("2026-06-24T22:00:00Z"),// Haití vs Brasil 18:00ET -- M53
-  C6:new Date("2026-06-24T22:00:00Z"),// Escocia vs Marruecos -- M54 (actually Marruecos vs Haití and Escocia vs Brasil)
-  D5:new Date("2026-06-26T02:00:00Z"),// Turquía vs EE.UU 22:00ET Jun25
-  D6:new Date("2026-06-26T02:00:00Z"),// Paraguay vs Australia 22:00ET Jun25
-  E5:new Date("2026-06-25T20:00:00Z"),// Curazao vs Costa de Marfil 16:00ET
-  E6:new Date("2026-06-25T20:00:00Z"),// Ecuador vs Alemania 16:00ET
-  F5:new Date("2026-06-26T01:00:00Z"),// Japón vs Suecia 21:00ET Jun25
-  F6:new Date("2026-06-26T01:00:00Z"),// Túnez vs Países Bajos 21:00ET Jun25
-  G5:new Date("2026-06-27T03:00:00Z"),// Egipto vs Irán 23:00ET Jun26
-  G6:new Date("2026-06-27T03:00:00Z"),// Nueva Zelanda vs Bélgica 23:00ET Jun26
-  H5:new Date("2026-06-27T00:00:00Z"),// Cabo Verde vs Arabia Saudita 20:00ET Jun26
-  H6:new Date("2026-06-27T00:00:00Z"),// Uruguay vs España 20:00ET Jun26
-  I5:new Date("2026-06-26T19:00:00Z"),// Noruega vs Francia 15:00ET
-  I6:new Date("2026-06-26T19:00:00Z"),// Senegal vs Irak 15:00ET
-  J5:new Date("2026-06-28T02:00:00Z"),// Argelia vs Austria 22:00ET Jun27
-  J6:new Date("2026-06-28T02:00:00Z"),// Jordania vs Argentina 22:00ET Jun27
-  K5:new Date("2026-06-28T00:30:00Z"),// Colombia vs Portugal 20:30ET Jun27
-  K6:new Date("2026-06-28T00:30:00Z"),// RD Congo vs Uzbekistán 20:30ET Jun27
-  L5:new Date("2026-06-27T21:00:00Z"),// Panamá vs Inglaterra 17:00ET
-  L6:new Date("2026-06-27T21:00:00Z"),// Croacia vs Ghana 17:00ET
+  // ── JORNADA 1 ────────────────────────────────────────────────────────────
+  // Jun 11 (CDMX times → UTC+6)
+  A1:new Date("2026-06-11T19:00:00Z"),// México vs Sudáfrica 13:00CDMX ✅ jugado
+  // Jun 12
+  A2:new Date("2026-06-12T02:00:00Z"),// Corea Sur vs Chequia 20:00CDMX Jun11 ✅
+  D1:new Date("2026-06-13T01:00:00Z"),// EE.UU vs Paraguay 19:00CDMX Jun12 ✅
+  B1:new Date("2026-06-12T19:00:00Z"),// Canadá vs Bosnia 13:00CDMX Jun12 ✅
+  // Jun 13
+  B2:new Date("2026-06-13T19:00:00Z"),// Qatar vs Suiza 13:00CDMX ✅
+  C1:new Date("2026-06-13T22:00:00Z"),// Brasil vs Marruecos 16:00CDMX ✅
+  C2:new Date("2026-06-14T01:00:00Z"),// Haití vs Escocia 19:00CDMX Jun13 ✅
+  D2:new Date("2026-06-14T04:00:00Z"),// Australia vs Turquía 22:00CDMX Jun13 ✅
+  // Jun 14
+  E1:new Date("2026-06-14T17:00:00Z"),// Alemania vs Curazao 11:00CDMX ✅
+  F1:new Date("2026-06-14T20:00:00Z"),// Países Bajos vs Japón 14:00CDMX ✅
+  E2:new Date("2026-06-14T23:00:00Z"),// Costa de Marfil vs Ecuador 17:00CDMX ✅
+  F2:new Date("2026-06-15T02:00:00Z"),// Suecia vs Túnez 20:00CDMX Jun14 ✅
+  // Jun 15
+  H1:new Date("2026-06-15T16:00:00Z"),// España vs Cabo Verde 10:00CDMX ✅
+  G1:new Date("2026-06-15T19:00:00Z"),// Bélgica vs Egipto 13:00CDMX ✅
+  H2:new Date("2026-06-15T22:00:00Z"),// Arabia Saudita vs Uruguay 16:00CDMX ✅
+  G2:new Date("2026-06-16T01:00:00Z"),// Irán vs Nueva Zelanda 19:00CDMX Jun15 ✅
+  // Jun 16
+  I1:new Date("2026-06-16T19:00:00Z"),// Francia vs Senegal 13:00CDMX ✅
+  I2:new Date("2026-06-16T22:00:00Z"),// Irak vs Noruega 16:00CDMX ✅
+  J1:new Date("2026-06-17T01:00:00Z"),// Argentina vs Argelia 19:00CDMX Jun16 ✅
+  J2:new Date("2026-06-17T04:00:00Z"),// Austria vs Jordania 22:00CDMX Jun16 ✅
+  // Jun 17
+  K1:new Date("2026-06-17T17:00:00Z"),// Portugal vs RD Congo 11:00CDMX ✅
+  L1:new Date("2026-06-17T20:00:00Z"),// Inglaterra vs Croacia 14:00CDMX ✅
+  L2:new Date("2026-06-17T23:00:00Z"),// Ghana vs Panamá 17:00CDMX ✅
+  K2:new Date("2026-06-18T02:00:00Z"),// Uzbekistán vs Colombia 20:00CDMX Jun17 ✅
+
+  // ── JORNADA 2 ────────────────────────────────────────────────────────────
+  // Jun 18
+  A3:new Date("2026-06-18T16:00:00Z"),// Chequia vs Sudáfrica 10:00CDMX ✅
+  B3:new Date("2026-06-18T19:00:00Z"),// Suiza vs Bosnia 13:00CDMX ✅
+  B4:new Date("2026-06-18T22:00:00Z"),// Canadá vs Qatar 16:00CDMX ✅
+  A4:new Date("2026-06-19T01:00:00Z"),// México vs Corea del Sur 19:00CDMX Jun18 ✅
+  // Jun 19
+  D3:new Date("2026-06-19T19:00:00Z"),// EE.UU vs Australia 13:00CDMX ✅
+  C3:new Date("2026-06-19T22:00:00Z"),// Escocia vs Marruecos 16:00CDMX ✅
+  C4:new Date("2026-06-20T00:30:00Z"),// Brasil vs Haití 18:30CDMX Jun19 ✅
+  D4:new Date("2026-06-20T04:00:00Z"),// Turquía vs Paraguay 22:00CDMX Jun19 ✅
+  // Jun 20
+  F3:new Date("2026-06-20T18:00:00Z"),// Países Bajos vs Suecia 12:00CDMX ✅
+  E3:new Date("2026-06-20T21:00:00Z"),// Alemania vs Costa de Marfil 15:00CDMX ✅
+  E4:new Date("2026-06-21T01:00:00Z"),// Ecuador vs Curazao 19:00CDMX Jun20 ✅
+  F4:new Date("2026-06-21T05:00:00Z"),// Túnez vs Japón 23:00CDMX Jun20 ✅
+  // Jun 21
+  H3:new Date("2026-06-21T17:00:00Z"),// España vs Arabia Saudita 11:00CDMX ✅
+  G3:new Date("2026-06-21T20:00:00Z"),// Bélgica vs Irán 14:00CDMX ✅
+  H4:new Date("2026-06-21T23:00:00Z"),// Uruguay vs Cabo Verde 17:00CDMX ✅
+  G4:new Date("2026-06-22T02:00:00Z"),// Nueva Zelanda vs Egipto 20:00CDMX Jun21 ✅
+  // Jun 22
+  J3:new Date("2026-06-22T18:00:00Z"),// Argentina vs Austria 12:00CDMX
+  I3:new Date("2026-06-22T22:00:00Z"),// Francia vs Irak 16:00CDMX
+  I4:new Date("2026-06-23T01:00:00Z"),// Noruega vs Senegal 19:00CDMX Jun22
+  J4:new Date("2026-06-23T04:00:00Z"),// Jordania vs Argelia 22:00CDMX Jun22
+  // Jun 23
+  K1_2:new Date("2026-06-23T18:00:00Z"),// Portugal vs Uzbekistán 12:00CDMX
+  K4:new Date("2026-06-24T01:00:00Z"),// Colombia vs RD Congo 19:00CDMX Jun23 ← ESTE
+  L3:new Date("2026-06-23T21:00:00Z"),// Inglaterra vs Ghana 15:00CDMX
+  L4:new Date("2026-06-24T00:00:00Z"),// Panamá vs Croacia 18:00CDMX Jun23
+
+  // ── JORNADA 3 ────────────────────────────────────────────────────────────
+  // Jun 24 - simultáneos 14:00 y 20:00 CDMX
+  B5:new Date("2026-06-24T20:00:00Z"),// Suiza vs Canadá 14:00CDMX
+  B6:new Date("2026-06-24T20:00:00Z"),// Bosnia vs Qatar 14:00CDMX
+  A5:new Date("2026-06-25T02:00:00Z"),// México vs Chequia 20:00CDMX Jun24
+  A6:new Date("2026-06-25T02:00:00Z"),// Sudáfrica vs Corea del Sur 20:00CDMX Jun24
+  // Jun 25
+  C5:new Date("2026-06-25T20:00:00Z"),// Escocia vs Brasil 14:00CDMX
+  C6:new Date("2026-06-25T20:00:00Z"),// Marruecos vs Haití 14:00CDMX
+  E5:new Date("2026-06-26T02:00:00Z"),// Curazao vs Costa de Marfil 20:00CDMX Jun25
+  E6:new Date("2026-06-26T02:00:00Z"),// Ecuador vs Alemania 20:00CDMX Jun25
+  // Jun 26
+  F5:new Date("2026-06-26T20:00:00Z"),// Japón vs Suecia 14:00CDMX ← CORREGIDO
+  F6:new Date("2026-06-26T20:00:00Z"),// Países Bajos vs Túnez 14:00CDMX ← CORREGIDO
+  D5:new Date("2026-06-27T02:00:00Z"),// EE.UU vs Turquía 20:00CDMX Jun26
+  D6:new Date("2026-06-27T02:00:00Z"),// Paraguay vs Australia 20:00CDMX Jun26
+  // Jun 26 tarde
+  H5:new Date("2026-06-27T00:00:00Z"),// Cabo Verde vs Arabia Saudita 18:00CDMX Jun26
+  H6:new Date("2026-06-27T00:00:00Z"),// Uruguay vs España 18:00CDMX Jun26
+  I5:new Date("2026-06-27T02:00:00Z"),// Noruega vs Francia 20:00CDMX Jun26 ← PERO fuente dice Jun26
+  I6:new Date("2026-06-27T02:00:00Z"),// Senegal vs Irak 20:00CDMX Jun26
+  // Jun 27
+  G5:new Date("2026-06-27T20:00:00Z"),// Egipto vs Irán 14:00CDMX
+  G6:new Date("2026-06-27T20:00:00Z"),// Nueva Zelanda vs Bélgica 14:00CDMX
+  J5:new Date("2026-06-28T02:00:00Z"),// Argelia vs Austria 20:00CDMX Jun27
+  J6:new Date("2026-06-28T02:00:00Z"),// Jordania vs Argentina 20:00CDMX Jun27
+  K3:new Date("2026-06-28T00:00:00Z"),// Portugal vs Uzbekistán 18:00CDMX Jun27 ← JORNADA 3
+  K5:new Date("2026-06-28T01:00:00Z"),// Colombia vs Portugal — JORNADA 3 K5
+  K6:new Date("2026-06-28T01:00:00Z"),// RD Congo vs Uzbekistán — JORNADA 3 K6
+  L5:new Date("2026-06-28T00:00:00Z"),// Panamá vs Inglaterra 18:00CDMX Jun27
+  L6:new Date("2026-06-28T00:00:00Z"),// Croacia vs Ghana 18:00CDMX Jun27
   R32_1:new Date("2026-06-28T19:00:00Z"),R32_2:new Date("2026-06-29T19:00:00Z"),
   R32_3:new Date("2026-06-28T22:30:00Z"),R32_4:new Date("2026-06-29T22:30:00Z"),
   R32_5:new Date("2026-06-30T19:00:00Z"),R32_6:new Date("2026-07-01T01:00:00Z"),
