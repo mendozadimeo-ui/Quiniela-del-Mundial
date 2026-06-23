@@ -316,7 +316,7 @@ const MD={
   J3:new Date("2026-06-22T17:00:00Z"),// Argentina vs Austria 13:00ET
   J4:new Date("2026-06-23T03:00:00Z"),// Jordania vs Argelia 23:00ET Jun22
   K3:new Date("2026-06-23T20:30:00Z"),// Portugal vs Uzbekistán 16:30ET
-  K4:new Date("2026-06-23T03:00:00Z"),// Colombia vs RD Congo 23:00ET Jun22
+  K4:new Date("2026-06-23T01:00:00Z"),// Colombia vs RD Congo 21:00ET Jun22
   L3:new Date("2026-06-23T20:00:00Z"),// Inglaterra vs Ghana 16:00ET
   L4:new Date("2026-06-23T23:00:00Z"),// Panamá vs Croacia 19:00ET
   // Jornada 3 (Jun 24-27) - simultáneos
@@ -360,11 +360,11 @@ const MD={
   Especiales:new Date("2026-06-11T12:00:00Z"),
 };
 
-// Bloquea AL INICIO del partido (sin margen de 1 hora)
+// Bloquea 10 minutos antes del partido
 function isMatchLocked(matchId){
   const d=MD[matchId];
   if(!d)return false;
-  return new Date()>=d;
+  return new Date()>=new Date(d.getTime()-10*60*1000);
 }
 // Bloquea ronda entera si el primer partido ya está bloqueado
 function isRoundLocked(round){
@@ -569,19 +569,7 @@ export default function App(){
   const [now,setNow]=useState(new Date());
 
   // Actualizar "now" cada minuto para que el bloqueo sea en tiempo real
-  // Auto-refresh results every 5 minutes
-  useEffect(()=>{
-    const interval = setInterval(async () => {
-      const updated = await fetchAndUpdateResults(results, groupStandings, saveData);
-      if(updated) {
-        setResults(updated.results);
-        setAdminScores(updated.results);
-        setGroupStandings(updated.groupStandings);
-        setAdminGS(updated.groupStandings);
-      }
-    }, 5 * 60 * 1000); // cada 5 minutos
-    return () => clearInterval(interval);
-  }, [results]);
+  // Auto-refresh desactivado - solo sync manual desde admin
 
   useEffect(()=>{
     const t=setInterval(()=>setNow(new Date()),60000);
@@ -595,17 +583,7 @@ export default function App(){
       if(r){setResults(r);setAdminScores(r);}
       if(sp){setAdminSpecial(sp);setAdminSp(sp);}
       if(gs){setGroupStandings(gs);setAdminGS(gs);}
-      // Auto-fetch results from football-data.org
-      const updated = await fetchAndUpdateResults(r||{}, gs||{}, saveData);
-      if(updated) {
-        setResults(updated.results);
-        setAdminScores(updated.results);
-        setGroupStandings(updated.groupStandings);
-        setAdminGS(updated.groupStandings);
-      } else if(r&&Object.keys(r).length>0) {
-        // If API fails, recalculate from stored results
-        // (recalcGroupStandings is called after component mounts)
-      }
+      // API auto-fetch desactivado - resultados manuales únicamente
 
       try{
         const saved=localStorage.getItem("quiniela_me_fb");
