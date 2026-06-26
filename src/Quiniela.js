@@ -378,19 +378,22 @@ const MD={
   Especiales:new Date("2026-06-11T12:00:00Z"),
 };
 
-// Bloquea 10 minutos antes del partido
-function isMatchLocked(matchId){
+// Bloquea 10 minutos antes del partido (respeta overrides manuales del admin)
+function isMatchLocked(matchId, manualUnlocks={}){
+  // Admin unlock override
+  if(manualUnlocks[matchId]==="open") return false;
+  if(manualUnlocks[matchId]==="closed") return true;
   const d=MD[matchId];
   if(!d)return false;
   return new Date()>=new Date(d.getTime()-10*60*1000);
 }
 // Bloquea ronda entera si el primer partido ya está bloqueado
-function isRoundLocked(round){
-  if(round==="Especiales")return isMatchLocked("Especiales");
-  if(round==="Grupos")return false; // grupos se maneja partido por partido
+function isRoundLocked(round, manualUnlocks={}){
+  if(round==="Especiales")return isMatchLocked("Especiales",manualUnlocks);
+  if(round==="Grupos")return false;
   const roundMatches={"Octavos":["R32_1"],"Cuartos":["QF_1"],"Semifinal":["SF_1"],"Tercer Lugar":["THIRD"],"Final":["FINAL"]};
   const first=roundMatches[round]?.[0];
-  return first?isMatchLocked(first):false;
+  return first?isMatchLocked(first,manualUnlocks):false;
 }
 // Eliminatorias no disponibles hasta que terminen grupos
 function isRoundAvailable(round){
@@ -578,6 +581,7 @@ export default function App(){
   const [confirmDelete,setConfirmDelete]=useState(null);
   const [newPlayerName,setNewPlayerName]=useState("");
   const [auditLog,setAuditLog]=useState([]);
+  const [manualUnlocks,setManualUnlocks]=useState({});
   const [auditLoading,setAuditLoading]=useState(false);
   const [editingPlayer,setEditingPlayer]=useState(null);
   const [editPicks,setEditPicks]=useState({});
@@ -621,6 +625,8 @@ export default function App(){
           // This triggers recalc on mount
         }, 100);
       }
+      const mu=await loadData("manualUnlocks");
+      if(mu)setManualUnlocks(mu);
       setLoading(false);
     }
     init();
@@ -1116,7 +1122,7 @@ export default function App(){
           <>
             <div style={{padding:"8px 10px",display:"flex",flexDirection:"column",gap:7}}>
               {matchesInRound.map(match=>{
-                const matchLocked=isMatchLocked(match.id);
+                const matchLocked=isMatchLocked(match.id,manualUnlocks);
                 const kickoff=MD[match.id];
                 const pick=myPicks[match.id]||{h:"",a:""};
                 const result=results[match.id];
@@ -2226,7 +2232,20 @@ export default function App(){
                         </div>
                         <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3,flex:1,textAlign:"right"}}><Flag name={match.away}/><span style={{fontSize:10,color:C.creamDim}}>{match.away}</span></div>
                       </div>
-                      <button style={{marginTop:8,background:`rgba(201,168,76,0.1)`,border:`1px solid ${C.border}`,color:C.gold,padding:"7px 14px",borderRadius:8,fontSize:11,cursor:"pointer",fontWeight:700,width:"100%",fontFamily:"'Barlow',sans-serif"}} onClick={()=>handleSaveResult(match.id)}>Guardar resultado</button>
+                      <div style={{display:"flex",gap:6,marginTop:8}}>
+                        <button style={{flex:1,background:`rgba(201,168,76,0.1)`,border:`1px solid ${C.border}`,color:C.gold,padding:"7px 10px",borderRadius:8,fontSize:11,cursor:"pointer",fontWeight:700,fontFamily:"'Barlow',sans-serif"}} onClick={()=>handleSaveResult(match.id)}>💾 Guardar</button>
+                        <button onClick={async()=>{
+                          const cur=manualUnlocks[match.id];
+                          const isLocked=isMatchLocked(match.id,manualUnlocks);
+                          const newVal=isLocked?"open":"closed";
+                          const updated={...manualUnlocks,[match.id]:newVal};
+                          setManualUnlocks(updated);
+                          await saveData("manualUnlocks",updated);
+                          showToast(newVal==="open"?"🔓 Partido abierto":"🔒 Partido cerrado");
+                        }} style={{background:isMatchLocked(match.id,manualUnlocks)?"rgba(34,197,94,0.12)":"rgba(239,68,68,0.12)",border:`1px solid ${isMatchLocked(match.id,manualUnlocks)?"rgba(34,197,94,0.3)":"rgba(239,68,68,0.3)"}`,color:isMatchLocked(match.id,manualUnlocks)?"#22c55e":"#fca5a5",padding:"7px 10px",borderRadius:8,fontSize:11,cursor:"pointer",fontWeight:700,fontFamily:"'Barlow',sans-serif"}}>
+                          {isMatchLocked(match.id,manualUnlocks)?"🔓 Abrir":"🔒 Cerrar"}
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
