@@ -348,20 +348,20 @@ const MD={
   D5:new Date("2026-06-27T02:00:00Z"),// EE.UU vs Turquía 20:00CDMX Jun26
   D6:new Date("2026-06-27T02:00:00Z"),// Paraguay vs Australia 20:00CDMX Jun26
   // Jun 26 tarde
-  H5:new Date("2026-06-27T00:00:00Z"),// Cabo Verde vs Arabia Saudita 18:00CDMX Jun26
-  H6:new Date("2026-06-27T00:00:00Z"),// Uruguay vs España 18:00CDMX Jun26
-  I5:new Date("2026-06-27T02:00:00Z"),// Noruega vs Francia 20:00CDMX Jun26 ← PERO fuente dice Jun26
-  I6:new Date("2026-06-27T02:00:00Z"),// Senegal vs Irak 20:00CDMX Jun26
+  H5:new Date("2026-06-27T00:00:00Z"),// Cabo Verde vs Arabia Saudita 20:00ET Jun26
+  H6:new Date("2026-06-27T00:00:00Z"),// Uruguay vs España 20:00ET Jun26
+  I5:new Date("2026-06-26T19:00:00Z"),// Noruega vs Francia 15:00ET Jun26
+  I6:new Date("2026-06-26T19:00:00Z"),// Senegal vs Irak 15:00ET Jun26
   // Jun 27
-  G5:new Date("2026-06-27T20:00:00Z"),// Egipto vs Irán 14:00CDMX
-  G6:new Date("2026-06-27T20:00:00Z"),// Nueva Zelanda vs Bélgica 14:00CDMX
-  J5:new Date("2026-06-28T02:00:00Z"),// Argelia vs Austria 20:00CDMX Jun27
-  J6:new Date("2026-06-28T02:00:00Z"),// Jordania vs Argentina 20:00CDMX Jun27
+  G5:new Date("2026-06-27T03:00:00Z"),// Egipto vs Irán 23:00ET Jun26
+  G6:new Date("2026-06-27T03:00:00Z"),// Nueva Zelanda vs Bélgica 23:00ET Jun26
+  J5:new Date("2026-06-28T02:00:00Z"),// Argelia vs Austria 22:00ET Jun27
+  J6:new Date("2026-06-28T02:00:00Z"),// Jordania vs Argentina 22:00ET Jun27
   K3:new Date("2026-06-28T00:00:00Z"),// Portugal vs Uzbekistán 18:00CDMX Jun27 ← JORNADA 3
-  K5:new Date("2026-06-28T01:00:00Z"),// Colombia vs Portugal — JORNADA 3 K5
-  K6:new Date("2026-06-28T01:00:00Z"),// RD Congo vs Uzbekistán — JORNADA 3 K6
-  L5:new Date("2026-06-28T00:00:00Z"),// Panamá vs Inglaterra 18:00CDMX Jun27
-  L6:new Date("2026-06-28T00:00:00Z"),// Croacia vs Ghana 18:00CDMX Jun27
+  K5:new Date("2026-06-27T23:30:00Z"),// Colombia vs Portugal 19:30ET Jun27
+  K6:new Date("2026-06-27T23:30:00Z"),// RD Congo vs Uzbekistán 19:30ET Jun27
+  L5:new Date("2026-06-27T21:00:00Z"),// Panamá vs Inglaterra 17:00ET Jun27
+  L6:new Date("2026-06-27T21:00:00Z"),// Croacia vs Ghana 17:00ET Jun27
   R32_1:new Date("2026-06-28T19:00:00Z"),R32_2:new Date("2026-06-29T19:00:00Z"),
   R32_3:new Date("2026-06-28T22:30:00Z"),R32_4:new Date("2026-06-29T22:30:00Z"),
   R32_5:new Date("2026-06-30T19:00:00Z"),R32_6:new Date("2026-07-01T01:00:00Z"),
