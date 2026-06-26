@@ -577,6 +577,8 @@ export default function App(){
   const [showPassFor,setShowPassFor]=useState(null);
   const [confirmDelete,setConfirmDelete]=useState(null);
   const [newPlayerName,setNewPlayerName]=useState("");
+  const [auditLog,setAuditLog]=useState([]);
+  const [auditLoading,setAuditLoading]=useState(false);
   const [editingPlayer,setEditingPlayer]=useState(null);
   const [editPicks,setEditPicks]=useState({});
   const [editSpecial,setEditSpecial]=useState({champion:"",scorer:""});
@@ -704,6 +706,17 @@ export default function App(){
     if(!me)return;setSaving(true);
     await saveData(`picks_${me.id}`,myPicks);
     await saveData(`special_${me.id}`,mySpecial);
+    // Log de auditoría
+    const logEntry={
+      playerId:me.id,
+      playerName:me.name,
+      action:"update_picks",
+      ts:new Date().toISOString(),
+      summary:`Actualizó pronósticos — ${Object.keys(myPicks).filter(k=>myPicks[k]?.h!=="").length} partidos ingresados`
+    };
+    try{
+      await addDoc(collection(db,"auditlog"),logEntry);
+    }catch(e){}
     setSaving(false);showToast("✅ Pronósticos guardados");
   }
 
@@ -751,6 +764,21 @@ export default function App(){
   async function handleSaveResult(matchId){
     const s=adminScores[matchId]||{h:"",a:""};
     const updated={...results,[matchId]:s};
+    const match=ALL_MATCHES.find(m=>m.id===matchId);
+    // Log de auditoría admin
+    const prevResult=results[matchId];
+    const logEntry={
+      playerId:"admin",
+      playerName:"ADMIN",
+      action:"update_result",
+      ts:new Date().toISOString(),
+      matchId,
+      matchName:match?`${match.home} vs ${match.away}`:"Desconocido",
+      prevResult:prevResult?`${prevResult.h}-${prevResult.a}`:"—",
+      newResult:`${s.h}-${s.a}`,
+      summary:`Resultado: ${match?match.home:"?"} ${s.h}-${s.a} ${match?match.away:"?"}`
+    };
+    try{await addDoc(collection(db,"auditlog"),logEntry);}catch(e){}
     setResults(updated);
     await saveData("results",updated);
     // Auto-recalculate group standings if it's a group match
@@ -851,6 +879,17 @@ export default function App(){
     await saveData(`picks_${editingPlayer.id}`,editPicks);
     await saveData(`special_${editingPlayer.id}`,editSpecial);
     showToast(`✅ Pronósticos de ${editingPlayer.name} guardados`);
+  }
+
+  async function loadAuditLog(){
+    setAuditLoading(true);
+    try{
+      const q=query(collection(db,"auditlog"),orderBy("ts","desc"),limit(100));
+      const snap=await getDocs(q);
+      const logs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      setAuditLog(logs);
+    }catch(e){console.error(e);}
+    setAuditLoading(false);
   }
 
   async function handleAddPlayer(){
@@ -2242,6 +2281,44 @@ export default function App(){
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {adminTab==="auditlog"&&(
+          <div style={{padding:"10px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:12,letterSpacing:1}}>🕵️ LOG DE AUDITORÍA</p>
+              <button style={saveBtnStyle} onClick={loadAuditLog}>🔄 Actualizar</button>
+            </div>
+            {auditLoading&&<p style={{color:C.creamDim,textAlign:"center",padding:20}}>Cargando...</p>}
+            {!auditLoading&&auditLog.length===0&&<p style={{color:"rgba(245,236,215,0.3)",textAlign:"center",padding:20}}>No hay registros aún</p>}
+            {auditLog.map((log,i)=>{
+              const isAdmin=log.playerId==="admin";
+              const isOverwrite=log.action==="update_result"&&log.prevResult&&log.prevResult!=="—"&&log.prevResult!==log.newResult;
+              const date=new Date(log.ts);
+              const timeStr=date.toLocaleString("es",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"America/New_York"})+" ET";
+              return(
+                <div key={log.id} style={{
+                  background:isOverwrite?"rgba(239,68,68,0.1)":isAdmin?"rgba(201,168,76,0.06)":"rgba(255,255,255,0.02)",
+                  border:`1px solid ${isOverwrite?"rgba(239,68,68,0.3)":isAdmin?"rgba(201,168,76,0.15)":"rgba(255,255,255,0.05)"}`,
+                  borderRadius:10,padding:"10px 12px",marginBottom:6
+                }}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
+                    <div style={{flex:1}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                        <span style={{fontSize:12,fontWeight:700,color:isAdmin?C.gold:C.cream}}>{log.playerName}</span>
+                        {isOverwrite&&<span style={{fontSize:9,background:"rgba(239,68,68,0.2)",color:"#fca5a5",padding:"1px 6px",borderRadius:8,fontWeight:700}}>⚠️ SOBREESCRIBIÓ</span>}
+                        {isAdmin&&!isOverwrite&&<span style={{fontSize:9,background:"rgba(201,168,76,0.15)",color:C.gold,padding:"1px 6px",borderRadius:8}}>ADMIN</span>}
+                      </div>
+                      <p style={{fontSize:11,color:C.creamDim}}>{log.summary}</p>
+                      {isOverwrite&&<p style={{fontSize:10,color:"#fca5a5",marginTop:3}}>Cambió: {log.prevResult} → {log.newResult}</p>}
+                      {log.matchName&&<p style={{fontSize:10,color:"rgba(245,236,215,0.4)",marginTop:2}}>⚽ {log.matchName}</p>}
+                    </div>
+                    <span style={{fontSize:10,color:"rgba(245,236,215,0.3)",whiteSpace:"nowrap"}}>{timeStr}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
