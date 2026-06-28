@@ -191,9 +191,15 @@ async function fetchAndUpdateResults(currentResults, currentGroupStandings, save
                 </div>
               </div>
               <div style={{marginBottom:10}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>CUARTOS DE FINAL</p>
+                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+                  <MatchBox id="CF_1" label="CF1"/><MatchBox id="CF_2" label="CF2"/><MatchBox id="CF_3" label="CF3"/><MatchBox id="CF_4" label="CF4"/>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>SEMIFINALES</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  <MatchBox id="SF_1" label="SF1"/><MatchBox id="SF_2" label="SF2"/><MatchBox id="SF_3" label="SF3"/>
+                  <MatchBox id="SF_1" label="SF1"/><MatchBox id="SF_2" label="SF2"/>
                 </div>
               </div>
               <div style={{marginBottom:10}}>
@@ -362,26 +368,31 @@ const MD={
   K6:new Date("2026-06-27T23:30:00Z"),// RD Congo vs Uzbekistán 19:30ET Jun27
   L5:new Date("2026-06-27T21:00:00Z"),// Panamá vs Inglaterra 17:00ET Jun27
   L6:new Date("2026-06-27T21:00:00Z"),// Croacia vs Ghana 17:00ET Jun27
-  R32_1:new Date("2026-06-28T19:00:00Z"),  // Jun 28 3pm ET — Sudáfrica vs Canadá
-  R32_2:new Date("2026-06-29T17:00:00Z"),  // Jun 29 1pm ET — Brasil vs Japón
-  R32_3:new Date("2026-06-29T20:30:00Z"),  // Jun 29 4:30pm ET — Alemania vs Paraguay
-  R32_4:new Date("2026-06-30T01:00:00Z"),  // Jun 29 9pm ET — Países Bajos vs Marruecos
-  R32_5:new Date("2026-06-30T17:00:00Z"),  // Jun 30 1pm ET — Costa de Marfil vs Noruega
-  R32_6:new Date("2026-06-30T21:00:00Z"),  // Jun 30 5pm ET — Francia vs Suecia
-  R32_7:new Date("2026-07-01T01:00:00Z"),  // Jun 30 9pm ET — México vs Ecuador
-  R32_8:new Date("2026-07-01T16:00:00Z"),  // Jul 1 12pm ET — Inglaterra vs R.D. del Congo
-  R32_9:new Date("2026-07-01T20:00:00Z"),  // Jul 1 4pm ET — Bélgica vs Senegal
-  R32_10:new Date("2026-07-02T00:00:00Z"), // Jul 1 8pm ET — EE.UU. vs Bosnia
-  R32_11:new Date("2026-07-02T19:00:00Z"), // Jul 2 3pm ET — España vs Austria
-  R32_12:new Date("2026-07-02T23:00:00Z"), // Jul 2 7pm ET — Portugal vs Croacia
-  R32_13:new Date("2026-07-03T03:00:00Z"), // Jul 2 11pm ET — Suiza vs Argelia
-  R32_14:new Date("2026-07-03T18:00:00Z"), // Jul 3 2pm ET — Australia vs Egipto
-  R32_15:new Date("2026-07-03T22:00:00Z"), // Jul 3 6pm ET — Argentina vs Cabo Verde
-  R32_16:new Date("2026-07-04T01:30:00Z"), // Jul 3 9:30pm ET — Colombia vs Ghana
+  R32_1:new Date("2026-06-28T19:00:00Z"),  // Jun 28 3pm ET
+  R32_2:new Date("2026-06-29T17:00:00Z"),  // Jun 29 1pm ET
+  R32_3:new Date("2026-06-29T20:30:00Z"),  // Jun 29 4:30pm ET
+  R32_4:new Date("2026-06-30T01:00:00Z"),  // Jun 29 9pm ET
+  R32_5:new Date("2026-06-30T17:00:00Z"),  // Jun 30 1pm ET
+  R32_6:new Date("2026-06-30T21:00:00Z"),  // Jun 30 5pm ET
+  R32_7:new Date("2026-07-01T01:00:00Z"),  // Jun 30 9pm ET
+  R32_8:new Date("2026-07-01T16:00:00Z"),  // Jul 1 12pm ET
+  R32_9:new Date("2026-07-01T20:00:00Z"),  // Jul 1 4pm ET
+  R32_10:new Date("2026-07-02T00:00:00Z"), // Jul 1 8pm ET
+  R32_11:new Date("2026-07-02T19:00:00Z"), // Jul 2 3pm ET
+  R32_12:new Date("2026-07-02T23:00:00Z"), // Jul 2 7pm ET
+  R32_13:new Date("2026-07-03T03:00:00Z"), // Jul 2 11pm ET
+  R32_14:new Date("2026-07-03T18:00:00Z"), // Jul 3 2pm ET
+  R32_15:new Date("2026-07-03T22:00:00Z"), // Jul 3 6pm ET
+  R32_16:new Date("2026-07-04T01:30:00Z"), // Jul 3 9:30pm ET
+  // Octavos (Ronda de 16) — Jul 4-7
   QF_1:new Date("2026-07-04T17:00:00Z"),QF_2:new Date("2026-07-04T21:00:00Z"),
   QF_3:new Date("2026-07-05T17:00:00Z"),QF_4:new Date("2026-07-05T21:00:00Z"),
   QF_5:new Date("2026-07-06T17:00:00Z"),QF_6:new Date("2026-07-06T20:00:00Z"),
   QF_7:new Date("2026-07-07T17:00:00Z"),QF_8:new Date("2026-07-07T21:00:00Z"),
+  // Cuartos (Ronda de 8) — Jul 9-11
+  CF_1:new Date("2026-07-09T19:00:00Z"),CF_2:new Date("2026-07-09T23:00:00Z"),
+  CF_3:new Date("2026-07-10T19:00:00Z"),CF_4:new Date("2026-07-11T19:00:00Z"),
+  // Semifinales — Jul 14-15
   SF_1:new Date("2026-07-14T19:00:00Z"),SF_2:new Date("2026-07-14T23:00:00Z"),
   SF_3:new Date("2026-07-15T19:00:00Z"),SF_4:new Date("2026-07-15T23:00:00Z"),
   THIRD:new Date("2026-07-18T20:00:00Z"),
@@ -402,13 +413,13 @@ function isMatchLocked(matchId, manualUnlocks={}){
 function isRoundLocked(round, manualUnlocks={}){
   if(round==="Especiales")return isMatchLocked("Especiales",manualUnlocks);
   if(round==="Grupos")return false;
-  const roundMatches={"Ronda de 32":["R32_1"],"Cuartos":["QF_1"],"Semifinal":["SF_1"],"Tercer Lugar":["THIRD"],"Final":["FINAL"]};
+  const roundMatches={"Ronda de 32":["R32_1"],"Octavos":["QF_1"],"Cuartos":["CF_1"],"Semifinal":["SF_1"],"Tercer Lugar":["THIRD"],"Final":["FINAL"]};
   const first=roundMatches[round]?.[0];
   return first?isMatchLocked(first,manualUnlocks):false;
 }
 // Eliminatorias no disponibles hasta que terminen grupos
 function isRoundAvailable(round){
-  const knockout=["Ronda de 32","Cuartos","Semifinal","Tercer Lugar","Final"];
+  const knockout=["Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
   if(knockout.includes(round))return new Date()>=new Date("2026-06-28T00:00:00Z");
   return true;
 }
@@ -514,7 +525,7 @@ const GROUP_MATCHES=Object.entries(GROUPS).flatMap(([g,t])=>[
   {id:`${g}6`,round:"Grupos",group:g,home:t[1],away:t[2]},
 ]);
 const KNOCKOUT_MATCHES=[
-  // ── RONDA DE 32 ─────────────────────────────────────────────────────
+  // ── RONDA DE 32 (16avos) ─────────────────────────────────────────
   {id:"R32_1",round:"Ronda de 32",home:"Sudáfrica",away:"Canadá"},
   {id:"R32_2",round:"Ronda de 32",home:"Brasil",away:"Japón"},
   {id:"R32_3",round:"Ronda de 32",home:"Alemania",away:"Paraguay"},
@@ -531,20 +542,23 @@ const KNOCKOUT_MATCHES=[
   {id:"R32_14",round:"Ronda de 32",home:"Australia",away:"Egipto"},
   {id:"R32_15",round:"Ronda de 32",home:"Argentina",away:"Cabo Verde"},
   {id:"R32_16",round:"Ronda de 32",home:"Colombia",away:"Ghana"},
-  // ── CUARTOS ──────────────────────────────────────────────────────────
-  {id:"QF_1",round:"Cuartos",home:"W R32_1",away:"W R32_4"},
-  {id:"QF_2",round:"Cuartos",home:"W R32_2",away:"W R32_5"},
-  {id:"QF_3",round:"Cuartos",home:"W R32_3",away:"W R32_6"},
-  {id:"QF_4",round:"Cuartos",home:"W R32_7",away:"W R32_8"},
-  {id:"QF_5",round:"Cuartos",home:"W R32_11",away:"W R32_12"},
-  {id:"QF_6",round:"Cuartos",home:"W R32_9",away:"W R32_10"},
-  {id:"QF_7",round:"Cuartos",home:"W R32_13",away:"W R32_16"},
-  {id:"QF_8",round:"Cuartos",home:"W R32_14",away:"W R32_15"},
-  // ── SEMIFINALES ───────────────────────────────────────────────────────
-  {id:"SF_1",round:"Semifinal",home:"W QF_1",away:"W QF_2"},
-  {id:"SF_2",round:"Semifinal",home:"W QF_3",away:"W QF_4"},
-  {id:"SF_3",round:"Semifinal",home:"W QF_5",away:"W QF_6"},
-  {id:"SF_4",round:"Semifinal",home:"W QF_7",away:"W QF_8"},
+  // ── OCTAVOS (8avos) ──────────────────────────────────────────────
+  {id:"QF_1",round:"Octavos",home:"W R32_1",away:"W R32_4"},
+  {id:"QF_2",round:"Octavos",home:"W R32_2",away:"W R32_5"},
+  {id:"QF_3",round:"Octavos",home:"W R32_3",away:"W R32_6"},
+  {id:"QF_4",round:"Octavos",home:"W R32_7",away:"W R32_8"},
+  {id:"QF_5",round:"Octavos",home:"W R32_11",away:"W R32_12"},
+  {id:"QF_6",round:"Octavos",home:"W R32_9",away:"W R32_10"},
+  {id:"QF_7",round:"Octavos",home:"W R32_13",away:"W R32_16"},
+  {id:"QF_8",round:"Octavos",home:"W R32_14",away:"W R32_15"},
+  // ── CUARTOS (4tos) ───────────────────────────────────────────────
+  {id:"CF_1",round:"Cuartos",home:"W QF_1",away:"W QF_2"},
+  {id:"CF_2",round:"Cuartos",home:"W QF_3",away:"W QF_4"},
+  {id:"CF_3",round:"Cuartos",home:"W QF_5",away:"W QF_6"},
+  {id:"CF_4",round:"Cuartos",home:"W QF_7",away:"W QF_8"},
+  // ── SEMIFINALES ──────────────────────────────────────────────────
+  {id:"SF_1",round:"Semifinal",home:"W CF_1",away:"W CF_2"},
+  {id:"SF_2",round:"Semifinal",home:"W CF_3",away:"W CF_4"},
   {id:"THIRD",round:"Tercer Lugar",home:"L SF_1",away:"L SF_2"},
   {id:"FINAL",round:"Final",home:"W SF_1",away:"W SF_2"},
 ];
@@ -1108,7 +1122,7 @@ export default function App(){
 
   // ── PICKS ─────────────────────────────────────────────────────────────────
   if(screen==="picks"){
-    const rounds=["Especiales","Grupos","Ronda de 32","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
     const roundLocked=isRoundLocked(activeRound);
     const roundAvail=isRoundAvailable(activeRound);
     const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
@@ -1369,9 +1383,15 @@ export default function App(){
                 </div>
               </div>
               <div style={{marginBottom:10}}>
+                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>CUARTOS DE FINAL</p>
+                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+                  <MatchBox id="CF_1" label="CF1"/><MatchBox id="CF_2" label="CF2"/><MatchBox id="CF_3" label="CF3"/><MatchBox id="CF_4" label="CF4"/>
+                </div>
+              </div>
+              <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>SEMIFINALES</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  <MatchBox id="SF_1" label="SF1"/><MatchBox id="SF_2" label="SF2"/><MatchBox id="SF_3" label="SF3"/>
+                  <MatchBox id="SF_1" label="SF1"/><MatchBox id="SF_2" label="SF2"/>
                 </div>
               </div>
               <div style={{marginBottom:10}}>
@@ -2044,7 +2064,7 @@ export default function App(){
 
   // ── ALL PICKS SCREEN ──────────────────────────────────────────────────────
   if(screen==="allPicks"){
-    const rounds=["Especiales","Grupos","Ronda de 32","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
     const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
@@ -2119,7 +2139,7 @@ export default function App(){
 
   // ── ADMIN ─────────────────────────────────────────────────────────────────
   if(screen==="admin"){
-    const rounds=["Especiales","Grupos","Ronda de 32","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
     const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:60}}><GF/>{toast&&<Toast data={toast}/>}
@@ -2134,7 +2154,7 @@ export default function App(){
 
               {/* Round selector */}
               <div style={{display:"flex",overflowX:"auto",gap:5,marginBottom:8,paddingBottom:4}}>
-                {["Especiales","Grupos","Ronda de 32","Cuartos","Semifinal","Tercer Lugar","Final"].map(r=>(
+                {["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"].map(r=>(
                   <button key={r} style={r===editRound?tabOn:tabOff} onClick={()=>setEditRound(r)}>{r}</button>
                 ))}
               </div>
