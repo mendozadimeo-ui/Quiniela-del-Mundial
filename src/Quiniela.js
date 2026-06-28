@@ -402,13 +402,13 @@ function isMatchLocked(matchId, manualUnlocks={}){
 function isRoundLocked(round, manualUnlocks={}){
   if(round==="Especiales")return isMatchLocked("Especiales",manualUnlocks);
   if(round==="Grupos")return false;
-  const roundMatches={"Octavos":["R32_1"],"Cuartos":["QF_1"],"Semifinal":["SF_1"],"Tercer Lugar":["THIRD"],"Final":["FINAL"]};
+  const roundMatches={"Ronda de 32":["R32_1"],"Cuartos":["QF_1"],"Semifinal":["SF_1"],"Tercer Lugar":["THIRD"],"Final":["FINAL"]};
   const first=roundMatches[round]?.[0];
   return first?isMatchLocked(first,manualUnlocks):false;
 }
 // Eliminatorias no disponibles hasta que terminen grupos
 function isRoundAvailable(round){
-  const knockout=["Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+  const knockout=["Ronda de 32","Cuartos","Semifinal","Tercer Lugar","Final"];
   if(knockout.includes(round))return new Date()>=new Date("2026-06-28T00:00:00Z");
   return true;
 }
@@ -515,22 +515,22 @@ const GROUP_MATCHES=Object.entries(GROUPS).flatMap(([g,t])=>[
 ]);
 const KNOCKOUT_MATCHES=[
   // ── RONDA DE 32 ─────────────────────────────────────────────────────
-  {id:"R32_1",round:"Octavos",home:"Sudáfrica",away:"Canadá"},
-  {id:"R32_2",round:"Octavos",home:"Brasil",away:"Japón"},
-  {id:"R32_3",round:"Octavos",home:"Alemania",away:"Paraguay"},
-  {id:"R32_4",round:"Octavos",home:"Países Bajos",away:"Marruecos"},
-  {id:"R32_5",round:"Octavos",home:"Costa de Marfil",away:"Noruega"},
-  {id:"R32_6",round:"Octavos",home:"Francia",away:"Suecia"},
-  {id:"R32_7",round:"Octavos",home:"México",away:"Ecuador"},
-  {id:"R32_8",round:"Octavos",home:"Inglaterra",away:"R.D. del Congo"},
-  {id:"R32_9",round:"Octavos",home:"Bélgica",away:"Senegal"},
-  {id:"R32_10",round:"Octavos",home:"EE.UU.",away:"Bosnia y Herzegovina"},
-  {id:"R32_11",round:"Octavos",home:"España",away:"Austria"},
-  {id:"R32_12",round:"Octavos",home:"Portugal",away:"Croacia"},
-  {id:"R32_13",round:"Octavos",home:"Suiza",away:"Argelia"},
-  {id:"R32_14",round:"Octavos",home:"Australia",away:"Egipto"},
-  {id:"R32_15",round:"Octavos",home:"Argentina",away:"Cabo Verde"},
-  {id:"R32_16",round:"Octavos",home:"Colombia",away:"Ghana"},
+  {id:"R32_1",round:"Ronda de 32",home:"Sudáfrica",away:"Canadá"},
+  {id:"R32_2",round:"Ronda de 32",home:"Brasil",away:"Japón"},
+  {id:"R32_3",round:"Ronda de 32",home:"Alemania",away:"Paraguay"},
+  {id:"R32_4",round:"Ronda de 32",home:"Países Bajos",away:"Marruecos"},
+  {id:"R32_5",round:"Ronda de 32",home:"Costa de Marfil",away:"Noruega"},
+  {id:"R32_6",round:"Ronda de 32",home:"Francia",away:"Suecia"},
+  {id:"R32_7",round:"Ronda de 32",home:"México",away:"Ecuador"},
+  {id:"R32_8",round:"Ronda de 32",home:"Inglaterra",away:"R.D. del Congo"},
+  {id:"R32_9",round:"Ronda de 32",home:"Bélgica",away:"Senegal"},
+  {id:"R32_10",round:"Ronda de 32",home:"EE.UU.",away:"Bosnia y Herzegovina"},
+  {id:"R32_11",round:"Ronda de 32",home:"España",away:"Austria"},
+  {id:"R32_12",round:"Ronda de 32",home:"Portugal",away:"Croacia"},
+  {id:"R32_13",round:"Ronda de 32",home:"Suiza",away:"Argelia"},
+  {id:"R32_14",round:"Ronda de 32",home:"Australia",away:"Egipto"},
+  {id:"R32_15",round:"Ronda de 32",home:"Argentina",away:"Cabo Verde"},
+  {id:"R32_16",round:"Ronda de 32",home:"Colombia",away:"Ghana"},
   // ── CUARTOS ──────────────────────────────────────────────────────────
   {id:"QF_1",round:"Cuartos",home:"W R32_1",away:"W R32_4"},
   {id:"QF_2",round:"Cuartos",home:"W R32_2",away:"W R32_5"},
@@ -1108,7 +1108,7 @@ export default function App(){
 
   // ── PICKS ─────────────────────────────────────────────────────────────────
   if(screen==="picks"){
-    const rounds=["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const rounds=["Especiales","Grupos","Ronda de 32","Cuartos","Semifinal","Tercer Lugar","Final"];
     const roundLocked=isRoundLocked(activeRound);
     const roundAvail=isRoundAvailable(activeRound);
     const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
@@ -2044,7 +2044,7 @@ export default function App(){
 
   // ── ALL PICKS SCREEN ──────────────────────────────────────────────────────
   if(screen==="allPicks"){
-    const rounds=["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const rounds=["Especiales","Grupos","Ronda de 32","Cuartos","Semifinal","Tercer Lugar","Final"];
     const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
@@ -2119,7 +2119,7 @@ export default function App(){
 
   // ── ADMIN ─────────────────────────────────────────────────────────────────
   if(screen==="admin"){
-    const rounds=["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const rounds=["Especiales","Grupos","Ronda de 32","Cuartos","Semifinal","Tercer Lugar","Final"];
     const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:60}}><GF/>{toast&&<Toast data={toast}/>}
@@ -2134,7 +2134,7 @@ export default function App(){
 
               {/* Round selector */}
               <div style={{display:"flex",overflowX:"auto",gap:5,marginBottom:8,paddingBottom:4}}>
-                {["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"].map(r=>(
+                {["Especiales","Grupos","Ronda de 32","Cuartos","Semifinal","Tercer Lugar","Final"].map(r=>(
                   <button key={r} style={r===editRound?tabOn:tabOff} onClick={()=>setEditRound(r)}>{r}</button>
                 ))}
               </div>
