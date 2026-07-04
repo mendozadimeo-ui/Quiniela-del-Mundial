@@ -191,27 +191,21 @@ async function fetchAndUpdateResults(currentResults, currentGroupStandings, save
                 </div>
               </div>
               <div style={{marginBottom:10}}>
-                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>CUARTOS DE FINAL</p>
-                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  <MatchBox id="CF_1" label="CF1"/><MatchBox id="CF_2" label="CF2"/><MatchBox id="CF_3" label="CF3"/><MatchBox id="CF_4" label="CF4"/>
-                </div>
-              </div>
-              <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>SEMIFINALES</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  <MatchBox id="SF_1" label="SF1"/><MatchBox id="SF_2" label="SF2"/>
+                  <MatchBox id="SF_1" label="SF1"/><MatchBox id="SF_2" label="SF2"/><MatchBox id="SF_3" label="SF3"/>
                 </div>
               </div>
               <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>CUARTOS</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8"].map(id=>(<MatchBox key={id} id={id} label={id.replace("_","")}/>))}
+                  {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6"].map(id=>(<MatchBox key={id} id={id} label={id.replace("_","")}/>))}
                 </div>
               </div>
               <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>RONDA DE 32</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12","R32_13","R32_14","R32_15","R32_16"].map(id=>(<MatchBox key={id} id={id} label={id.replace("R32_","R")}/>))}
+                  {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12"].map(id=>(<MatchBox key={id} id={id} label={id.replace("R32_","R")}/>))}
                 </div>
               </div>
             </div>
@@ -368,33 +362,17 @@ const MD={
   K6:new Date("2026-06-27T23:30:00Z"),// RD Congo vs Uzbekistán 19:30ET Jun27
   L5:new Date("2026-06-27T21:00:00Z"),// Panamá vs Inglaterra 17:00ET Jun27
   L6:new Date("2026-06-27T21:00:00Z"),// Croacia vs Ghana 17:00ET Jun27
-  R32_1:new Date("2026-06-28T19:00:00Z"),  // Jun 28 3pm ET
-  R32_2:new Date("2026-06-29T17:00:00Z"),  // Jun 29 1pm ET
-  R32_3:new Date("2026-06-29T20:30:00Z"),  // Jun 29 4:30pm ET
-  R32_4:new Date("2026-06-30T01:00:00Z"),  // Jun 29 9pm ET
-  R32_5:new Date("2026-06-30T17:00:00Z"),  // Jun 30 1pm ET
-  R32_6:new Date("2026-06-30T21:00:00Z"),  // Jun 30 5pm ET
-  R32_7:new Date("2026-07-01T01:00:00Z"),  // Jun 30 9pm ET
-  R32_8:new Date("2026-07-01T16:00:00Z"),  // Jul 1 12pm ET
-  R32_9:new Date("2026-07-01T20:00:00Z"),  // Jul 1 4pm ET
-  R32_10:new Date("2026-07-02T00:00:00Z"), // Jul 1 8pm ET
-  R32_11:new Date("2026-07-02T19:00:00Z"), // Jul 2 3pm ET
-  R32_12:new Date("2026-07-02T23:00:00Z"), // Jul 2 7pm ET
-  R32_13:new Date("2026-07-03T03:00:00Z"), // Jul 2 11pm ET
-  R32_14:new Date("2026-07-03T18:00:00Z"), // Jul 3 2pm ET
-  R32_15:new Date("2026-07-03T22:00:00Z"), // Jul 3 6pm ET
-  R32_16:new Date("2026-07-04T01:30:00Z"), // Jul 3 9:30pm ET
-  // Octavos (Ronda de 16) — Jul 4-7
-  QF_1:new Date("2026-07-04T17:00:00Z"),QF_2:new Date("2026-07-04T21:00:00Z"),
-  QF_3:new Date("2026-07-05T17:00:00Z"),QF_4:new Date("2026-07-05T21:00:00Z"),
-  QF_5:new Date("2026-07-06T17:00:00Z"),QF_6:new Date("2026-07-06T20:00:00Z"),
-  QF_7:new Date("2026-07-07T17:00:00Z"),QF_8:new Date("2026-07-07T21:00:00Z"),
-  // Cuartos (Ronda de 8) — Jul 9-11
-  CF_1:new Date("2026-07-09T19:00:00Z"),CF_2:new Date("2026-07-09T23:00:00Z"),
-  CF_3:new Date("2026-07-10T19:00:00Z"),CF_4:new Date("2026-07-11T19:00:00Z"),
-  // Semifinales — Jul 14-15
-  SF_1:new Date("2026-07-14T19:00:00Z"),SF_2:new Date("2026-07-14T23:00:00Z"),
-  SF_3:new Date("2026-07-15T19:00:00Z"),SF_4:new Date("2026-07-15T23:00:00Z"),
+  R32_1:new Date("2026-06-28T19:00:00Z"),R32_2:new Date("2026-06-29T19:00:00Z"),
+  R32_3:new Date("2026-06-28T22:30:00Z"),R32_4:new Date("2026-06-29T22:30:00Z"),
+  R32_5:new Date("2026-06-30T19:00:00Z"),R32_6:new Date("2026-07-01T01:00:00Z"),
+  R32_7:new Date("2026-06-30T22:30:00Z"),R32_8:new Date("2026-07-01T22:30:00Z"),
+  R32_9:new Date("2026-07-02T19:00:00Z"),R32_10:new Date("2026-07-02T22:30:00Z"),
+  R32_11:new Date("2026-07-03T19:00:00Z"),R32_12:new Date("2026-07-03T22:30:00Z"),
+  QF_1:new Date("2026-07-09T20:00:00Z"),QF_2:new Date("2026-07-10T20:00:00Z"),
+  QF_3:new Date("2026-07-11T20:00:00Z"),QF_4:new Date("2026-07-11T23:00:00Z"),
+  QF_5:new Date("2026-07-13T20:00:00Z"),QF_6:new Date("2026-07-13T23:00:00Z"),
+  SF_1:new Date("2026-07-14T22:00:00Z"),SF_2:new Date("2026-07-15T22:00:00Z"),
+  SF_3:new Date("2026-07-19T22:00:00Z"),
   THIRD:new Date("2026-07-18T20:00:00Z"),
   FINAL:new Date("2026-07-19T18:00:00Z"),
   Especiales:new Date("2026-06-11T12:00:00Z"),
@@ -413,13 +391,13 @@ function isMatchLocked(matchId, manualUnlocks={}){
 function isRoundLocked(round, manualUnlocks={}){
   if(round==="Especiales")return isMatchLocked("Especiales",manualUnlocks);
   if(round==="Grupos")return false;
-  const roundMatches={"Ronda de 32":["R32_1"],"Octavos":["QF_1"],"Cuartos":["CF_1"],"Semifinal":["SF_1"],"Tercer Lugar":["THIRD"],"Final":["FINAL"]};
+  const roundMatches={"Octavos":["R32_1"],"Cuartos":["QF_1"],"Semifinal":["SF_1"],"Tercer Lugar":["THIRD"],"Final":["FINAL"]};
   const first=roundMatches[round]?.[0];
   return first?isMatchLocked(first,manualUnlocks):false;
 }
 // Eliminatorias no disponibles hasta que terminen grupos
 function isRoundAvailable(round){
-  const knockout=["Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+  const knockout=["Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
   if(knockout.includes(round))return new Date()>=new Date("2026-06-28T00:00:00Z");
   return true;
 }
@@ -525,44 +503,29 @@ const GROUP_MATCHES=Object.entries(GROUPS).flatMap(([g,t])=>[
   {id:`${g}6`,round:"Grupos",group:g,home:t[1],away:t[2]},
 ]);
 const KNOCKOUT_MATCHES=[
-  // ── RONDA DE 32 (16avos) ─────────────────────────────────────────
-  {id:"R32_1",round:"Ronda de 32",home:"Sudáfrica",away:"Canadá"},
-  {id:"R32_2",round:"Ronda de 32",home:"Brasil",away:"Japón"},
-  {id:"R32_3",round:"Ronda de 32",home:"Alemania",away:"Paraguay"},
-  {id:"R32_4",round:"Ronda de 32",home:"Países Bajos",away:"Marruecos"},
-  {id:"R32_5",round:"Ronda de 32",home:"Costa de Marfil",away:"Noruega"},
-  {id:"R32_6",round:"Ronda de 32",home:"Francia",away:"Suecia"},
-  {id:"R32_7",round:"Ronda de 32",home:"México",away:"Ecuador"},
-  {id:"R32_8",round:"Ronda de 32",home:"Inglaterra",away:"R.D. del Congo"},
-  {id:"R32_9",round:"Ronda de 32",home:"Bélgica",away:"Senegal"},
-  {id:"R32_10",round:"Ronda de 32",home:"EE.UU.",away:"Bosnia y Herzegovina"},
-  {id:"R32_11",round:"Ronda de 32",home:"España",away:"Austria"},
-  {id:"R32_12",round:"Ronda de 32",home:"Portugal",away:"Croacia"},
-  {id:"R32_13",round:"Ronda de 32",home:"Suiza",away:"Argelia"},
-  {id:"R32_14",round:"Ronda de 32",home:"Australia",away:"Egipto"},
-  {id:"R32_15",round:"Ronda de 32",home:"Argentina",away:"Cabo Verde"},
-  {id:"R32_16",round:"Ronda de 32",home:"Colombia",away:"Ghana"},
-  // ── OCTAVOS (8avos) ──────────────────────────────────────────────
-  {id:"QF_1",round:"Octavos",home:"W R32_1",away:"W R32_4"},
-  {id:"QF_2",round:"Octavos",home:"W R32_2",away:"W R32_5"},
-  {id:"QF_3",round:"Octavos",home:"W R32_3",away:"W R32_6"},
-  {id:"QF_4",round:"Octavos",home:"W R32_7",away:"W R32_8"},
-  {id:"QF_5",round:"Octavos",home:"W R32_11",away:"W R32_12"},
-  {id:"QF_6",round:"Octavos",home:"W R32_9",away:"W R32_10"},
-  {id:"QF_7",round:"Octavos",home:"W R32_13",away:"W R32_16"},
-  {id:"QF_8",round:"Octavos",home:"W R32_14",away:"W R32_15"},
-  // ── CUARTOS (4tos) ───────────────────────────────────────────────
-  {id:"CF_1",round:"Cuartos",home:"W QF_1",away:"W QF_2"},
-  {id:"CF_2",round:"Cuartos",home:"W QF_3",away:"W QF_4"},
-  {id:"CF_3",round:"Cuartos",home:"W QF_5",away:"W QF_6"},
-  {id:"CF_4",round:"Cuartos",home:"W QF_7",away:"W QF_8"},
-  // ── SEMIFINALES ──────────────────────────────────────────────────
-  {id:"SF_1",round:"Semifinal",home:"W CF_1",away:"W CF_2"},
-  {id:"SF_2",round:"Semifinal",home:"W CF_3",away:"W CF_4"},
+  {id:"R32_1",round:"Octavos",home:"1A",away:"2B"},{id:"R32_2",round:"Octavos",home:"1B",away:"2A"},
+  {id:"R32_3",round:"Octavos",home:"1C",away:"2D"},{id:"R32_4",round:"Octavos",home:"1D",away:"2C"},
+  {id:"R32_5",round:"Octavos",home:"1E",away:"2F"},{id:"R32_6",round:"Octavos",home:"1F",away:"2E"},
+  {id:"R32_7",round:"Octavos",home:"1G",away:"2H"},{id:"R32_8",round:"Octavos",home:"1H",away:"2G"},
+  {id:"R32_9",round:"Octavos",home:"1I",away:"2J"},{id:"R32_10",round:"Octavos",home:"1J",away:"2I"},
+  {id:"R32_11",round:"Octavos",home:"1K",away:"2L"},{id:"R32_12",round:"Octavos",home:"1L",away:"2K"},
+  {id:"QF_1",round:"Cuartos",home:"W R32_1",away:"W R32_2"},{id:"QF_2",round:"Cuartos",home:"W R32_3",away:"W R32_4"},
+  {id:"QF_3",round:"Cuartos",home:"W R32_5",away:"W R32_6"},{id:"QF_4",round:"Cuartos",home:"W R32_7",away:"W R32_8"},
+  {id:"QF_5",round:"Cuartos",home:"W R32_9",away:"W R32_10"},{id:"QF_6",round:"Cuartos",home:"W R32_11",away:"W R32_12"},
+  {id:"SF_1",round:"Semifinal",home:"W QF_1",away:"W QF_2"},{id:"SF_2",round:"Semifinal",home:"W QF_3",away:"W QF_4"},
+  {id:"SF_3",round:"Semifinal",home:"W QF_5",away:"W QF_6"},
   {id:"THIRD",round:"Tercer Lugar",home:"L SF_1",away:"L SF_2"},
   {id:"FINAL",round:"Final",home:"W SF_1",away:"W SF_2"},
 ];
 const ALL_MATCHES=[...GROUP_MATCHES,...KNOCKOUT_MATCHES];
+// Aplica equipos editados desde admin sobre KNOCKOUT_MATCHES
+function getEffectiveMatches(knockoutTeams){
+  return ALL_MATCHES.map(m=>{
+    const kt=knockoutTeams?.[m.id];
+    if(!kt)return m;
+    return {...m,home:kt.home||m.home,away:kt.away||m.away};
+  });
+}
 
 function calcMatchPoints(pred,result){
   if(!result||result.h===""||result.a==="")return 0;
@@ -627,6 +590,7 @@ export default function App(){
   const [newPlayerName,setNewPlayerName]=useState("");
   const [auditLog,setAuditLog]=useState([]);
   const [manualUnlocks,setManualUnlocks]=useState({});
+  const [knockoutTeams,setKnockoutTeams]=useState({});
   const [auditLoading,setAuditLoading]=useState(false);
   const [editingPlayer,setEditingPlayer]=useState(null);
   const [editPicks,setEditPicks]=useState({});
@@ -672,6 +636,8 @@ export default function App(){
       }
       const mu=await loadData("manualUnlocks");
       if(mu)setManualUnlocks(mu);
+      const kt=await loadData("knockoutTeams");
+      if(kt)setKnockoutTeams(kt);
       setLoading(false);
     }
     init();
@@ -1122,10 +1088,11 @@ export default function App(){
 
   // ── PICKS ─────────────────────────────────────────────────────────────────
   if(screen==="picks"){
-    const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const rounds=["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
     const roundLocked=isRoundLocked(activeRound);
     const roundAvail=isRoundAvailable(activeRound);
-    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
+    const effectiveMatches=getEffectiveMatches(knockoutTeams);
+    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:effectiveMatches.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
         <div style={topBar}>
@@ -1383,27 +1350,21 @@ export default function App(){
                 </div>
               </div>
               <div style={{marginBottom:10}}>
-                <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>CUARTOS DE FINAL</p>
-                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  <MatchBox id="CF_1" label="CF1"/><MatchBox id="CF_2" label="CF2"/><MatchBox id="CF_3" label="CF3"/><MatchBox id="CF_4" label="CF4"/>
-                </div>
-              </div>
-              <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>SEMIFINALES</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  <MatchBox id="SF_1" label="SF1"/><MatchBox id="SF_2" label="SF2"/>
+                  <MatchBox id="SF_1" label="SF1"/><MatchBox id="SF_2" label="SF2"/><MatchBox id="SF_3" label="SF3"/>
                 </div>
               </div>
               <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>CUARTOS</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8"].map(id=>(<MatchBox key={id} id={id} label={id.replace("_","")}/>))}
+                  {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6"].map(id=>(<MatchBox key={id} id={id} label={id.replace("_","")}/>))}
                 </div>
               </div>
               <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>RONDA DE 32</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12","R32_13","R32_14","R32_15","R32_16"].map(id=>(<MatchBox key={id} id={id} label={id.replace("R32_","R")}/>))}
+                  {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12"].map(id=>(<MatchBox key={id} id={id} label={id.replace("R32_","R")}/>))}
                 </div>
               </div>
             </div>
@@ -1829,7 +1790,7 @@ export default function App(){
           <div style={{marginBottom:10}}>
             <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:8}}>CUARTOS · 9-11 JUL</p>
             <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-              {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8"].map(id=>(
+              {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6"].map(id=>(
                 <MatchBox key={id} id={id} label={id.replace("_","")}/>
               ))}
             </div>
@@ -1839,7 +1800,7 @@ export default function App(){
           <div style={{marginBottom:10}}>
             <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:8}}>RONDA DE 32 · 28 JUN - 3 JUL</p>
             <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-              {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12","R32_13","R32_14","R32_15","R32_16"].map(id=>(
+              {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12"].map(id=>(
                 <MatchBox key={id} id={id} label={id.replace("R32_","R")}/>
               ))}
             </div>
@@ -2064,8 +2025,9 @@ export default function App(){
 
   // ── ALL PICKS SCREEN ──────────────────────────────────────────────────────
   if(screen==="allPicks"){
-    const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
-    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
+    const rounds=["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const effectiveMatches=getEffectiveMatches(knockoutTeams);
+    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:effectiveMatches.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
         <div style={topBar}>
@@ -2139,8 +2101,9 @@ export default function App(){
 
   // ── ADMIN ─────────────────────────────────────────────────────────────────
   if(screen==="admin"){
-    const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
-    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
+    const rounds=["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const effectiveMatches=getEffectiveMatches(knockoutTeams);
+    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:effectiveMatches.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:60}}><GF/>{toast&&<Toast data={toast}/>}
         {/* EDIT PLAYER PICKS MODAL */}
@@ -2154,7 +2117,7 @@ export default function App(){
 
               {/* Round selector */}
               <div style={{display:"flex",overflowX:"auto",gap:5,marginBottom:8,paddingBottom:4}}>
-                {["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"].map(r=>(
+                {["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"].map(r=>(
                   <button key={r} style={r===editRound?tabOn:tabOff} onClick={()=>setEditRound(r)}>{r}</button>
                 ))}
               </div>
@@ -2251,7 +2214,7 @@ export default function App(){
           }}>🔄 Sync</button>
         </div>
         <div style={{display:"flex",padding:"8px 10px",gap:6,borderBottom:`1px solid rgba(201,168,76,0.08)`}}>
-          {[["resultados","⚽ Resultados"],["jugadores","👥 Jugadores"],["grupos","📊 Grupos"]].map(([t,l])=>(<button key={t} style={adminTab===t?tabOn:tabOff} onClick={()=>setAdminTab(t)}>{l}</button>))}
+          {[["resultados","⚽ Resultados"],["jugadores","👥 Jugadores"],["grupos","📊 Grupos"],["bracket","🏅 Equipos"]].map(([t,l])=>(<button key={t} style={adminTab===t?tabOn:tabOff} onClick={()=>setAdminTab(t)}>{l}</button>))}
         </div>
 
         {adminTab==="resultados"&&(
@@ -2392,6 +2355,72 @@ export default function App(){
           </div>
         )}
 
+        {adminTab==="bracket"&&(
+          <div style={{padding:"10px"}}>
+            <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:12,letterSpacing:1,marginBottom:4}}>EDITAR EQUIPOS ELIMINATORIOS</p>
+            <p style={{color:"rgba(245,236,215,0.3)",fontSize:11,marginBottom:12}}>Edita los equipos de cada partido. Se guarda por partido.</p>
+            {[
+              {label:"🔵 RONDA DE 32 (16avos)",ids:["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12","R32_13","R32_14","R32_15","R32_16"]},
+              {label:"🟡 OCTAVOS (8avos)",ids:["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8"]},
+              {label:"🟠 CUARTOS (4tos)",ids:["CF_1","CF_2","CF_3","CF_4"]},
+              {label:"🔴 SEMIFINALES",ids:["SF_1","SF_2"]},
+              {label:"🏆 FINAL & 3ER LUGAR",ids:["FINAL","THIRD"]},
+            ].map(({label,ids})=>(
+              <div key={label} style={{marginBottom:16,background:"rgba(92,26,39,0.1)",border:`1px solid ${C.border}`,borderRadius:13,overflow:"hidden"}}>
+                <div style={{background:"rgba(201,168,76,0.12)",padding:"8px 12px",borderBottom:`1px solid ${C.border}`}}>
+                  <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:11,letterSpacing:2}}>{label}</p>
+                </div>
+                {ids.map(id=>{
+                  const base=ALL_MATCHES.find(m=>m.id===id);
+                  if(!base)return null;
+                  const cur=knockoutTeams[id]||{home:base.home,away:base.away};
+                  return(
+                    <div key={id} style={{padding:"10px 12px",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                      <p style={{fontSize:10,color:"rgba(245,236,215,0.3)",letterSpacing:1,marginBottom:6}}>{id}</p>
+                      <div style={{display:"flex",alignItems:"center",gap:6}}>
+                        <div style={{flex:1}}>
+                          <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginBottom:3}}>LOCAL</p>
+                          <select style={{width:"100%",background:"rgba(26,10,14,0.8)",border:`1px solid ${C.border}`,color:C.cream,padding:"8px 10px",borderRadius:8,fontSize:12,fontFamily:"'Barlow',sans-serif"}}
+                            value={cur.home}
+                            onChange={async e=>{
+                              const updated={...knockoutTeams,[id]:{...cur,home:e.target.value}};
+                              setKnockoutTeams(updated);
+                              await saveData("knockoutTeams",updated);
+                              showToast(`✅ ${id} local actualizado`);
+                            }}>
+                            <option value="">— Sin definir —</option>
+                            {ALL_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
+                          </select>
+                        </div>
+                        <span style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:14,fontWeight:700,flexShrink:0}}>VS</span>
+                        <div style={{flex:1}}>
+                          <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginBottom:3}}>VISITANTE</p>
+                          <select style={{width:"100%",background:"rgba(26,10,14,0.8)",border:`1px solid ${C.border}`,color:C.cream,padding:"8px 10px",borderRadius:8,fontSize:12,fontFamily:"'Barlow',sans-serif"}}
+                            value={cur.away}
+                            onChange={async e=>{
+                              const updated={...knockoutTeams,[id]:{...cur,away:e.target.value}};
+                              setKnockoutTeams(updated);
+                              await saveData("knockoutTeams",updated);
+                              showToast(`✅ ${id} visitante actualizado`);
+                            }}>
+                            <option value="">— Sin definir —</option>
+                            {ALL_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      {cur.home&&cur.away&&(
+                        <p style={{fontSize:11,color:"#6B8A52",marginTop:6,textAlign:"center"}}>
+                          {FLAGS[cur.home]||"🏳️"} {cur.home} vs {cur.away} {FLAGS[cur.away]||"🏳️"}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        )}
+
         {adminTab==="grupos"&&(
           <div style={{padding:"10px"}}>
             <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:12,letterSpacing:1,marginBottom:4}}>ACTUALIZAR TABLA DE GRUPOS</p>
@@ -2470,8 +2499,8 @@ function HomeApodos({players,results,adminSpecial,me,myPicks,mySpecial,loadData}
         const special=p.id===me?.id?mySpecial:(await loadData(`special_${p.id}`)||{});
         let pts=0,exact=0,goalsHit=0;
         const ALL_M=[...Object.entries({A:["México","Sudáfrica","Corea del Sur","Chequia"],B:["Canadá","Bosnia y Herzegovina","Catar","Suiza"],C:["Brasil","Marruecos","Haití","Escocia"],D:["EE.UU.","Paraguay","Australia","Turquía"],E:["Alemania","Curazao","Costa de Marfil","Ecuador"],F:["Países Bajos","Japón","Suecia","Túnez"],G:["Bélgica","Egipto","Irán","Nueva Zelanda"],H:["España","Cabo Verde","Arabia Saudita","Uruguay"],I:["Francia","Senegal","Irak","Noruega"],J:["Argentina","Argelia","Austria","Jordania"],K:["Portugal","R.D. del Congo","Uzbekistán","Colombia"],L:["Inglaterra","Croacia","Ghana","Panamá"]}).flatMap(([g,t])=>[`${g}1`,`${g}2`,`${g}3`,`${g}4`,`${g}5`,`${g}6`]),
-          "R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12","R32_13","R32_14","R32_15","R32_16",
-          "QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8","SF_1","SF_2","SF_3","THIRD","FINAL"
+          "R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12",
+          "QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","SF_1","SF_2","SF_3","THIRD","FINAL"
         ];
         Object.entries(results).forEach(([mid,result])=>{
           if(!result||result.h==="")return;
