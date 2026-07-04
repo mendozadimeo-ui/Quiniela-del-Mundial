@@ -362,45 +362,50 @@ const MD={
   K6:new Date("2026-06-27T23:30:00Z"),// RD Congo vs Uzbekistán 19:30ET Jun27
   L5:new Date("2026-06-27T21:00:00Z"),// Panamá vs Inglaterra 17:00ET Jun27
   L6:new Date("2026-06-27T21:00:00Z"),// Croacia vs Ghana 17:00ET Jun27
-  // Ronda de 32
-  R32_1:new Date("2026-06-28T19:00:00Z"),
-  R32_2:new Date("2026-06-29T17:00:00Z"),
-  R32_3:new Date("2026-06-29T20:30:00Z"),
-  R32_4:new Date("2026-06-30T01:00:00Z"),
-  R32_5:new Date("2026-06-30T17:00:00Z"),
+  // Ronda de 32 (ET = UTC-4 en julio)
+  R32_1:new Date("2026-06-28T17:00:00Z"),  // Jun 28 1pm ET  — Canadá vs Marruecos
+  R32_2:new Date("2026-06-28T21:00:00Z"),  // Jun 28 5pm ET  — Alemania vs Paraguay (Boston)
+  R32_3:new Date("2026-06-29T17:00:00Z"),  // Jun 29 1pm ET
+  R32_4:new Date("2026-06-29T21:00:00Z"),  // Jun 29 5pm ET
+  R32_5:new Date("2026-06-30T17:00:00Z"),  // Jun 30
   R32_6:new Date("2026-06-30T21:00:00Z"),
   R32_7:new Date("2026-07-01T01:00:00Z"),
-  R32_8:new Date("2026-07-01T16:00:00Z"),
-  R32_9:new Date("2026-07-01T20:00:00Z"),
-  R32_10:new Date("2026-07-02T00:00:00Z"),
-  R32_11:new Date("2026-07-02T19:00:00Z"),
-  R32_12:new Date("2026-07-02T23:00:00Z"),
-  R32_13:new Date("2026-07-03T03:00:00Z"),
-  R32_14:new Date("2026-07-03T18:00:00Z"),
-  R32_15:new Date("2026-07-03T22:00:00Z"),
-  R32_16:new Date("2026-07-04T01:30:00Z"),
-  // Octavos
-  QF_1:new Date("2026-07-04T17:00:00Z"),QF_2:new Date("2026-07-04T21:00:00Z"),
-  QF_3:new Date("2026-07-05T17:00:00Z"),QF_4:new Date("2026-07-05T21:00:00Z"),
-  QF_5:new Date("2026-07-06T17:00:00Z"),QF_6:new Date("2026-07-06T20:00:00Z"),
-  QF_7:new Date("2026-07-07T17:00:00Z"),QF_8:new Date("2026-07-07T21:00:00Z"),
-  // Cuartos
+  R32_8:new Date("2026-07-01T17:00:00Z"),
+  R32_9:new Date("2026-07-01T21:00:00Z"),
+  R32_10:new Date("2026-07-02T01:00:00Z"),
+  R32_11:new Date("2026-07-02T17:00:00Z"),
+  R32_12:new Date("2026-07-02T21:00:00Z"),
+  R32_13:new Date("2026-07-03T17:00:00Z"),
+  R32_14:new Date("2026-07-03T21:00:00Z"),
+  R32_15:new Date("2026-07-04T01:00:00Z"),
+  R32_16:new Date("2026-07-04T05:30:00Z"),
+  // Octavos (ET = Miami)
+  QF_1:new Date("2026-07-04T17:00:00Z"),  // Jul 4  1pm ET — Canadá vs Marruecos
+  QF_2:new Date("2026-07-04T21:00:00Z"),  // Jul 4  5pm ET — Paraguay vs Francia
+  QF_3:new Date("2026-07-05T20:00:00Z"),  // Jul 5  4pm ET — Brasil vs Noruega
+  QF_4:new Date("2026-07-06T00:00:00Z"),  // Jul 5  8pm ET — México vs Inglaterra
+  QF_5:new Date("2026-07-06T19:00:00Z"),  // Jul 6  3pm ET — Portugal vs España
+  QF_6:new Date("2026-07-07T00:00:00Z"),  // Jul 6  8pm ET — EE.UU. vs Bélgica
+  QF_7:new Date("2026-07-07T16:00:00Z"),  // Jul 7 12pm ET — Argentina vs Egipto
+  QF_8:new Date("2026-07-07T20:00:00Z"),  // Jul 7  4pm ET — Suiza vs Colombia
+  // Cuartos (editables desde admin, fechas tentativas)
   CF_1:new Date("2026-07-09T19:00:00Z"),CF_2:new Date("2026-07-09T23:00:00Z"),
   CF_3:new Date("2026-07-10T19:00:00Z"),CF_4:new Date("2026-07-11T19:00:00Z"),
-  // Semis & Final
-  SF_1:new Date("2026-07-14T19:00:00Z"),SF_2:new Date("2026-07-14T23:00:00Z"),
-  THIRD:new Date("2026-07-18T20:00:00Z"),
-  FINAL:new Date("2026-07-19T18:00:00Z"),
-  THIRD:new Date("2026-07-18T20:00:00Z"),
-  FINAL:new Date("2026-07-19T18:00:00Z"),
-  Especiales:new Date("2026-12-31T23:59:00Z"), // Control manual desde admin
+  SF_1:new Date("2026-07-14T19:00:00Z"),SF_2:new Date("2026-07-15T19:00:00Z"),
+  THIRD:new Date("2026-07-18T21:00:00Z"),
+  FINAL:new Date("2026-07-19T19:00:00Z"),
+  Especiales:new Date("2026-12-31T23:59:00Z"),
 };
 
 // Bloquea 10 minutos antes del partido (respeta overrides manuales del admin)
-function isMatchLocked(matchId, manualUnlocks={}){
-  // Admin unlock override
+function isMatchLocked(matchId, manualUnlocks={}, knockoutTeams={}){
   if(manualUnlocks[matchId]==="open") return false;
   if(manualUnlocks[matchId]==="closed") return true;
+  const kt=knockoutTeams[matchId];
+  if(kt?.lockDate){
+    const d=new Date(kt.lockDate);
+    return new Date()>=new Date(d.getTime()-10*60*1000);
+  }
   const d=MD[matchId];
   if(!d)return false;
   return new Date()>=new Date(d.getTime()-10*60*1000);
@@ -521,7 +526,7 @@ const GROUP_MATCHES=Object.entries(GROUPS).flatMap(([g,t])=>[
   {id:`${g}6`,round:"Grupos",group:g,home:t[1],away:t[2]},
 ]);
 const KNOCKOUT_MATCHES=[
-  // ── RONDA DE 32 — equipos fijos (ya jugados) ────────────────────────
+  // ── RONDA DE 32 ──────────────────────────────────────────────────────
   {id:"R32_1",round:"Ronda de 32",home:"Sudáfrica",away:"Canadá"},
   {id:"R32_2",round:"Ronda de 32",home:"Brasil",away:"Japón"},
   {id:"R32_3",round:"Ronda de 32",home:"Alemania",away:"Paraguay"},
@@ -538,35 +543,33 @@ const KNOCKOUT_MATCHES=[
   {id:"R32_14",round:"Ronda de 32",home:"Australia",away:"Egipto"},
   {id:"R32_15",round:"Ronda de 32",home:"Argentina",away:"Cabo Verde"},
   {id:"R32_16",round:"Ronda de 32",home:"Colombia",away:"Ghana"},
-  // ── OCTAVOS — equipos editables desde admin ──────────────────────────
-  {id:"QF_1",round:"Octavos",home:"Por definir",away:"Por definir"},
-  {id:"QF_2",round:"Octavos",home:"Por definir",away:"Por definir"},
-  {id:"QF_3",round:"Octavos",home:"Por definir",away:"Por definir"},
-  {id:"QF_4",round:"Octavos",home:"Por definir",away:"Por definir"},
-  {id:"QF_5",round:"Octavos",home:"Por definir",away:"Por definir"},
-  {id:"QF_6",round:"Octavos",home:"Por definir",away:"Por definir"},
-  {id:"QF_7",round:"Octavos",home:"Por definir",away:"Por definir"},
-  {id:"QF_8",round:"Octavos",home:"Por definir",away:"Por definir"},
-  // ── CUARTOS — editables ───────────────────────────────────────────────
+  // ── OCTAVOS ───────────────────────────────────────────────────────────
+  {id:"QF_1",round:"Octavos",home:"Canadá",away:"Marruecos"},
+  {id:"QF_2",round:"Octavos",home:"Paraguay",away:"Francia"},
+  {id:"QF_3",round:"Octavos",home:"Brasil",away:"Noruega"},
+  {id:"QF_4",round:"Octavos",home:"México",away:"Inglaterra"},
+  {id:"QF_5",round:"Octavos",home:"Portugal",away:"España"},
+  {id:"QF_6",round:"Octavos",home:"EE.UU.",away:"Bélgica"},
+  {id:"QF_7",round:"Octavos",home:"Argentina",away:"Egipto"},
+  {id:"QF_8",round:"Octavos",home:"Suiza",away:"Colombia"},
+  // ── CUARTOS — editables desde admin ──────────────────────────────────
   {id:"CF_1",round:"Cuartos",home:"Por definir",away:"Por definir"},
   {id:"CF_2",round:"Cuartos",home:"Por definir",away:"Por definir"},
   {id:"CF_3",round:"Cuartos",home:"Por definir",away:"Por definir"},
   {id:"CF_4",round:"Cuartos",home:"Por definir",away:"Por definir"},
-  // ── SEMIFINALES — editables ───────────────────────────────────────────
   {id:"SF_1",round:"Semifinal",home:"Por definir",away:"Por definir"},
   {id:"SF_2",round:"Semifinal",home:"Por definir",away:"Por definir"},
   {id:"THIRD",round:"Tercer Lugar",home:"Por definir",away:"Por definir"},
   {id:"FINAL",round:"Final",home:"Por definir",away:"Por definir"},
 ];
 const ALL_MATCHES=[...GROUP_MATCHES,...KNOCKOUT_MATCHES];
-// Aplica equipos editados desde admin SOLO a Octavos en adelante
-function getEffectiveMatches(knockoutTeams){
-  const EDITABLE_ROUNDS=["Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+function getEffectiveMatches(kt){
+  const ED=["Cuartos","Semifinal","Tercer Lugar","Final"];
   return ALL_MATCHES.map(m=>{
-    if(!EDITABLE_ROUNDS.includes(m.round))return m;
-    const kt=knockoutTeams?.[m.id];
-    if(!kt)return m;
-    return {...m,home:kt.home||m.home,away:kt.away||m.away};
+    if(!ED.includes(m.round))return m;
+    const k=kt?.[m.id];
+    if(!k)return m;
+    return {...m,home:k.home||m.home,away:k.away||m.away};
   });
 }
 
@@ -1177,7 +1180,7 @@ export default function App(){
           <>
             <div style={{padding:"8px 10px",display:"flex",flexDirection:"column",gap:7}}>
               {matchesInRound.map(match=>{
-                const matchLocked=isMatchLocked(match.id,manualUnlocks);
+                const matchLocked=isMatchLocked(match.id,manualUnlocks,knockoutTeams);
                 const kickoff=MD[match.id];
                 const pick=myPicks[match.id]||{h:"",a:""};
                 const result=results[match.id];
@@ -2400,10 +2403,9 @@ export default function App(){
 
         {adminTab==="equipos"&&(
           <div style={{padding:"10px"}}>
-            <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:12,letterSpacing:1,marginBottom:4}}>🏅 EQUIPOS ELIMINATORIOS</p>
-            <p style={{color:"rgba(245,236,215,0.3)",fontSize:11,marginBottom:14}}>Selecciona los equipos de cada partido. Se guarda automáticamente al elegir.</p>
+            <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:12,letterSpacing:1,marginBottom:4}}>🏅 EQUIPOS & HORARIOS</p>
+            <p style={{color:"rgba(245,236,215,0.3)",fontSize:11,marginBottom:14}}>Cuartos en adelante: define equipos y hora de bloqueo automático (hora Miami/ET).</p>
             {[
-              {label:"🟡 OCTAVOS DE FINAL",ids:["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8","QF_7","QF_8"]},
               {label:"🟠 CUARTOS DE FINAL",ids:["CF_1","CF_2","CF_3","CF_4"]},
               {label:"🔴 SEMIFINALES",ids:["SF_1","SF_2"]},
               {label:"🏆 FINAL & 3ER LUGAR",ids:["FINAL","THIRD"]},
@@ -2413,48 +2415,65 @@ export default function App(){
                   <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:11,letterSpacing:2}}>{label}</p>
                 </div>
                 {ids.map(id=>{
-                  const base=ALL_MATCHES.find(m=>m.id===id);
-                  if(!base)return null;
-                  const cur=knockoutTeams[id]||{home:"",away:""};
-                  const homeVal=cur.home||"";
-                  const awayVal=cur.away||"";
-                  const saveTeam=async(field,val)=>{
+                  const base=ALL_MATCHES.find(m=>m.id===id)||{home:"",away:""};
+                  const cur=knockoutTeams[id]||{home:"",away:"",lockDate:""};
+                  const saveField=async(field,val)=>{
                     const updated={...knockoutTeams,[id]:{...cur,[field]:val}};
                     setKnockoutTeams(updated);
                     await saveData("knockoutTeams",updated);
+                    if(field==="lockDate"){
+                      const mu2={...manualUnlocks};delete mu2[id];
+                      setManualUnlocks(mu2);await saveData("manualUnlocks",mu2);
+                    }
                     showToast(`✅ ${id} guardado`);
                   };
+                  const lockDate=cur.lockDate?new Date(cur.lockDate):null;
+                  const isLocked=manualUnlocks[id]==="closed"||(lockDate&&new Date()>=new Date(lockDate.getTime()-10*60*1000));
                   return(
                     <div key={id} style={{padding:"10px 12px",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
-                      <p style={{fontSize:9,color:"rgba(245,236,215,0.35)",letterSpacing:1,marginBottom:8,textTransform:"uppercase"}}>{id.replace("_"," ")}</p>
-                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                        <p style={{fontSize:10,color:"rgba(245,236,215,0.4)",letterSpacing:1,textTransform:"uppercase"}}>{id.replace("_"," ")}</p>
+                        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                          {lockDate&&<p style={{fontSize:9,color:"rgba(245,236,215,0.3)"}}>🔒 {lockDate.toLocaleString("es",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"America/New_York"})} ET</p>}
+                          <button onClick={async()=>{
+                            const newVal=isLocked?"open":"closed";
+                            const updated={...manualUnlocks,[id]:newVal};
+                            setManualUnlocks(updated);await saveData("manualUnlocks",updated);
+                            showToast(newVal==="open"?"🔓 Abierto":"🔒 Cerrado");
+                          }} style={{background:isLocked?"rgba(34,197,94,0.12)":"rgba(239,68,68,0.12)",border:`1px solid ${isLocked?"rgba(34,197,94,0.3)":"rgba(239,68,68,0.3)"}`,color:isLocked?"#22c55e":"#fca5a5",padding:"4px 10px",borderRadius:8,fontSize:11,cursor:"pointer",fontFamily:"'Barlow',sans-serif",fontWeight:700}}>
+                            {isLocked?"🔓 Abrir":"🔒 Cerrar"}
+                          </button>
+                        </div>
+                      </div>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
                         <div style={{flex:1}}>
                           <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginBottom:3}}>LOCAL</p>
-                          <select
-                            style={{width:"100%",background:"rgba(26,10,14,0.8)",border:`1px solid ${homeVal?C.gold:C.border}`,color:homeVal?C.cream:"rgba(245,236,215,0.3)",padding:"8px 8px",borderRadius:8,fontSize:12,fontFamily:"'Barlow',sans-serif",cursor:"pointer"}}
-                            value={homeVal}
-                            onChange={e=>saveTeam("home",e.target.value)}>
+                          <select style={{width:"100%",background:"rgba(26,10,14,0.8)",border:`1px solid ${cur.home?C.gold:C.border}`,color:cur.home?C.cream:"rgba(245,236,215,0.4)",padding:"7px 8px",borderRadius:8,fontSize:12,fontFamily:"'Barlow',sans-serif"}}
+                            value={cur.home||""} onChange={e=>saveField("home",e.target.value)}>
                             <option value="">— Sin definir —</option>
                             {ALL_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
                           </select>
                         </div>
-                        <div style={{textAlign:"center",flexShrink:0}}>
-                          <p style={{fontFamily:"'Cinzel',serif",fontSize:13,color:C.gold,fontWeight:700}}>VS</p>
-                        </div>
+                        <span style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700}}>VS</span>
                         <div style={{flex:1}}>
                           <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginBottom:3}}>VISITANTE</p>
-                          <select
-                            style={{width:"100%",background:"rgba(26,10,14,0.8)",border:`1px solid ${awayVal?C.gold:C.border}`,color:awayVal?C.cream:"rgba(245,236,215,0.3)",padding:"8px 8px",borderRadius:8,fontSize:12,fontFamily:"'Barlow',sans-serif",cursor:"pointer"}}
-                            value={awayVal}
-                            onChange={e=>saveTeam("away",e.target.value)}>
+                          <select style={{width:"100%",background:"rgba(26,10,14,0.8)",border:`1px solid ${cur.away?C.gold:C.border}`,color:cur.away?C.cream:"rgba(245,236,215,0.4)",padding:"7px 8px",borderRadius:8,fontSize:12,fontFamily:"'Barlow',sans-serif"}}
+                            value={cur.away||""} onChange={e=>saveField("away",e.target.value)}>
                             <option value="">— Sin definir —</option>
                             {ALL_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
                           </select>
                         </div>
                       </div>
-                      {homeVal&&awayVal&&(
-                        <div style={{marginTop:8,padding:"6px 10px",background:"rgba(74,94,58,0.15)",border:"1px solid rgba(74,94,58,0.3)",borderRadius:8,textAlign:"center"}}>
-                          <p style={{fontSize:12,color:"#6B8A52",fontWeight:700}}>{FLAGS[homeVal]||"🏳️"} {homeVal} <span style={{color:C.gold}}>vs</span> {awayVal} {FLAGS[awayVal]||"🏳️"}</p>
+                      <div>
+                        <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginBottom:3}}>⏰ HORA DE BLOQUEO (Miami/ET)</p>
+                        <input type="datetime-local"
+                          style={{width:"100%",background:"rgba(26,10,14,0.8)",border:`1px solid ${cur.lockDate?C.gold:C.border}`,color:cur.lockDate?C.cream:"rgba(245,236,215,0.4)",padding:"7px 8px",borderRadius:8,fontSize:12,fontFamily:"'Barlow',sans-serif"}}
+                          value={cur.lockDate||""}
+                          onChange={e=>saveField("lockDate",e.target.value)}/>
+                      </div>
+                      {cur.home&&cur.away&&(
+                        <div style={{marginTop:8,padding:"5px 10px",background:"rgba(74,94,58,0.15)",border:"1px solid rgba(74,94,58,0.3)",borderRadius:8,textAlign:"center"}}>
+                          <p style={{fontSize:12,color:"#6B8A52",fontWeight:700}}>{FLAGS[cur.home]||"🏳️"} {cur.home} vs {cur.away} {FLAGS[cur.away]||"🏳️"}</p>
                         </div>
                       )}
                     </div>
