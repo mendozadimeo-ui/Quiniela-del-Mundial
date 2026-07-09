@@ -199,13 +199,13 @@ async function fetchAndUpdateResults(currentResults, currentGroupStandings, save
               <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>CUARTOS</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6"].map(id=>(<MatchBox key={id} id={id} label={id.replace("_","")}/>))}
+                  {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8"].map(id=>(<MatchBox key={id} id={id} label={id.replace("_","")}/>))}
                 </div>
               </div>
               <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>RONDA DE 32</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12"].map(id=>(<MatchBox key={id} id={id} label={id.replace("R32_","R")}/>))}
+                  {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12","R32_13","R32_14","R32_15","R32_16"].map(id=>(<MatchBox key={id} id={id} label={id.replace("R32_","R")}/>))}
                 </div>
               </div>
             </div>
@@ -362,20 +362,29 @@ const MD={
   K6:new Date("2026-06-27T23:30:00Z"),// RD Congo vs Uzbekistán 19:30ET Jun27
   L5:new Date("2026-06-27T21:00:00Z"),// Panamá vs Inglaterra 17:00ET Jun27
   L6:new Date("2026-06-27T21:00:00Z"),// Croacia vs Ghana 17:00ET Jun27
-  R32_1:new Date("2026-06-28T19:00:00Z"),R32_2:new Date("2026-06-29T19:00:00Z"),
-  R32_3:new Date("2026-06-28T22:30:00Z"),R32_4:new Date("2026-06-29T22:30:00Z"),
-  R32_5:new Date("2026-06-30T19:00:00Z"),R32_6:new Date("2026-07-01T01:00:00Z"),
-  R32_7:new Date("2026-06-30T22:30:00Z"),R32_8:new Date("2026-07-01T22:30:00Z"),
-  R32_9:new Date("2026-07-02T19:00:00Z"),R32_10:new Date("2026-07-02T22:30:00Z"),
-  R32_11:new Date("2026-07-03T19:00:00Z"),R32_12:new Date("2026-07-03T22:30:00Z"),
-  QF_1:new Date("2026-07-09T20:00:00Z"),QF_2:new Date("2026-07-10T20:00:00Z"),
-  QF_3:new Date("2026-07-11T20:00:00Z"),QF_4:new Date("2026-07-11T23:00:00Z"),
-  QF_5:new Date("2026-07-13T20:00:00Z"),QF_6:new Date("2026-07-13T23:00:00Z"),
-  SF_1:new Date("2026-07-14T22:00:00Z"),SF_2:new Date("2026-07-15T22:00:00Z"),
-  SF_3:new Date("2026-07-19T22:00:00Z"),
-  THIRD:new Date("2026-07-18T20:00:00Z"),
-  FINAL:new Date("2026-07-19T18:00:00Z"),
-  Especiales:new Date("2026-06-11T12:00:00Z"),
+  // Ronda de 32
+  R32_1:new Date("2026-06-28T17:00:00Z"),R32_2:new Date("2026-06-29T17:00:00Z"),
+  R32_3:new Date("2026-06-29T21:00:00Z"),R32_4:new Date("2026-06-30T01:00:00Z"),
+  R32_5:new Date("2026-06-30T17:00:00Z"),R32_6:new Date("2026-06-30T21:00:00Z"),
+  R32_7:new Date("2026-07-01T01:00:00Z"),R32_8:new Date("2026-07-01T17:00:00Z"),
+  R32_9:new Date("2026-07-01T21:00:00Z"),R32_10:new Date("2026-07-02T01:00:00Z"),
+  R32_11:new Date("2026-07-02T17:00:00Z"),R32_12:new Date("2026-07-02T21:00:00Z"),
+  R32_13:new Date("2026-07-03T17:00:00Z"),R32_14:new Date("2026-07-03T21:00:00Z"),
+  R32_15:new Date("2026-07-04T01:00:00Z"),R32_16:new Date("2026-07-04T05:30:00Z"),
+  // Octavos
+  QF_1:new Date("2026-07-04T17:00:00Z"),QF_2:new Date("2026-07-04T21:00:00Z"),
+  QF_3:new Date("2026-07-05T20:00:00Z"),QF_4:new Date("2026-07-06T01:00:00Z"),
+  QF_5:new Date("2026-07-06T19:00:00Z"),QF_6:new Date("2026-07-07T00:00:00Z"),
+  QF_7:new Date("2026-07-07T16:00:00Z"),QF_8:new Date("2026-07-07T20:00:00Z"),
+  // Cuartos
+  CF_1:new Date("2026-07-09T20:00:00Z"),  // Jul 9  4pm ET — Francia vs Marruecos
+  CF_2:new Date("2026-07-10T19:00:00Z"),  // Jul 10 3pm ET — España vs Bélgica
+  CF_3:new Date("2026-07-11T21:00:00Z"),  // Jul 11 5pm ET — Noruega vs Inglaterra
+  CF_4:new Date("2026-07-12T01:00:00Z"),  // Jul 11 9pm ET — Argentina vs Suiza
+  SF_1:new Date("2026-07-14T19:00:00Z"),SF_2:new Date("2026-07-15T19:00:00Z"),
+  THIRD:new Date("2026-07-18T21:00:00Z"),
+  FINAL:new Date("2026-07-19T19:00:00Z"),
+  Especiales:new Date("2026-12-31T23:59:00Z"),
 };
 
 // Bloquea 10 minutos antes del partido (respeta overrides manuales del admin)
@@ -391,13 +400,13 @@ function isMatchLocked(matchId, manualUnlocks={}){
 function isRoundLocked(round, manualUnlocks={}){
   if(round==="Especiales")return isMatchLocked("Especiales",manualUnlocks);
   if(round==="Grupos")return false;
-  const roundMatches={"Octavos":["R32_1"],"Cuartos":["QF_1"],"Semifinal":["SF_1"],"Tercer Lugar":["THIRD"],"Final":["FINAL"]};
+  const roundMatches={"Ronda de 32":["R32_1"],"Octavos":["QF_1"],"Cuartos":["CF_1"],"Semifinal":["SF_1"],"Tercer Lugar":["THIRD"],"Final":["FINAL"]};
   const first=roundMatches[round]?.[0];
   return first?isMatchLocked(first,manualUnlocks):false;
 }
 // Eliminatorias no disponibles hasta que terminen grupos
 function isRoundAvailable(round){
-  const knockout=["Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+  const knockout=["Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
   if(knockout.includes(round))return new Date()>=new Date("2026-06-28T00:00:00Z");
   return true;
 }
@@ -503,25 +512,65 @@ const GROUP_MATCHES=Object.entries(GROUPS).flatMap(([g,t])=>[
   {id:`${g}6`,round:"Grupos",group:g,home:t[1],away:t[2]},
 ]);
 const KNOCKOUT_MATCHES=[
-  {id:"R32_1",round:"Octavos",home:"1A",away:"2B"},{id:"R32_2",round:"Octavos",home:"1B",away:"2A"},
-  {id:"R32_3",round:"Octavos",home:"1C",away:"2D"},{id:"R32_4",round:"Octavos",home:"1D",away:"2C"},
-  {id:"R32_5",round:"Octavos",home:"1E",away:"2F"},{id:"R32_6",round:"Octavos",home:"1F",away:"2E"},
-  {id:"R32_7",round:"Octavos",home:"1G",away:"2H"},{id:"R32_8",round:"Octavos",home:"1H",away:"2G"},
-  {id:"R32_9",round:"Octavos",home:"1I",away:"2J"},{id:"R32_10",round:"Octavos",home:"1J",away:"2I"},
-  {id:"R32_11",round:"Octavos",home:"1K",away:"2L"},{id:"R32_12",round:"Octavos",home:"1L",away:"2K"},
-  {id:"QF_1",round:"Cuartos",home:"W R32_1",away:"W R32_2"},{id:"QF_2",round:"Cuartos",home:"W R32_3",away:"W R32_4"},
-  {id:"QF_3",round:"Cuartos",home:"W R32_5",away:"W R32_6"},{id:"QF_4",round:"Cuartos",home:"W R32_7",away:"W R32_8"},
-  {id:"QF_5",round:"Cuartos",home:"W R32_9",away:"W R32_10"},{id:"QF_6",round:"Cuartos",home:"W R32_11",away:"W R32_12"},
-  {id:"SF_1",round:"Semifinal",home:"W QF_1",away:"W QF_2"},{id:"SF_2",round:"Semifinal",home:"W QF_3",away:"W QF_4"},
-  {id:"SF_3",round:"Semifinal",home:"W QF_5",away:"W QF_6"},
-  {id:"THIRD",round:"Tercer Lugar",home:"L SF_1",away:"L SF_2"},
-  {id:"FINAL",round:"Final",home:"W SF_1",away:"W SF_2"},
+  // ── RONDA DE 32 ──────────────────────────────────────────────────────
+  {id:"R32_1",round:"Ronda de 32",home:"Sudáfrica",away:"Canadá"},
+  {id:"R32_2",round:"Ronda de 32",home:"Brasil",away:"Japón"},
+  {id:"R32_3",round:"Ronda de 32",home:"Alemania",away:"Paraguay"},
+  {id:"R32_4",round:"Ronda de 32",home:"Países Bajos",away:"Marruecos"},
+  {id:"R32_5",round:"Ronda de 32",home:"Costa de Marfil",away:"Noruega"},
+  {id:"R32_6",round:"Ronda de 32",home:"Francia",away:"Suecia"},
+  {id:"R32_7",round:"Ronda de 32",home:"México",away:"Ecuador"},
+  {id:"R32_8",round:"Ronda de 32",home:"Inglaterra",away:"R.D. del Congo"},
+  {id:"R32_9",round:"Ronda de 32",home:"Bélgica",away:"Senegal"},
+  {id:"R32_10",round:"Ronda de 32",home:"EE.UU.",away:"Bosnia y Herzegovina"},
+  {id:"R32_11",round:"Ronda de 32",home:"España",away:"Austria"},
+  {id:"R32_12",round:"Ronda de 32",home:"Portugal",away:"Croacia"},
+  {id:"R32_13",round:"Ronda de 32",home:"Suiza",away:"Argelia"},
+  {id:"R32_14",round:"Ronda de 32",home:"Australia",away:"Egipto"},
+  {id:"R32_15",round:"Ronda de 32",home:"Argentina",away:"Cabo Verde"},
+  {id:"R32_16",round:"Ronda de 32",home:"Colombia",away:"Ghana"},
+  // ── OCTAVOS ───────────────────────────────────────────────────────────
+  {id:"QF_1",round:"Octavos",home:"Canadá",away:"Marruecos"},
+  {id:"QF_2",round:"Octavos",home:"Paraguay",away:"Francia"},
+  {id:"QF_3",round:"Octavos",home:"Brasil",away:"Noruega"},
+  {id:"QF_4",round:"Octavos",home:"México",away:"Inglaterra"},
+  {id:"QF_5",round:"Octavos",home:"Portugal",away:"España"},
+  {id:"QF_6",round:"Octavos",home:"EE.UU.",away:"Bélgica"},
+  {id:"QF_7",round:"Octavos",home:"Argentina",away:"Egipto"},
+  {id:"QF_8",round:"Octavos",home:"Suiza",away:"Colombia"},
+  // ── CUARTOS ───────────────────────────────────────────────────────────
+  {id:"CF_1",round:"Cuartos",home:"Francia",away:"Marruecos"},
+  {id:"CF_2",round:"Cuartos",home:"España",away:"Bélgica"},
+  {id:"CF_3",round:"Cuartos",home:"Noruega",away:"Inglaterra"},
+  {id:"CF_4",round:"Cuartos",home:"Argentina",away:"Suiza"},
+  // ── SEMIFINALES — editables ───────────────────────────────────────────
+  {id:"SF_1",round:"Semifinal",home:"Por definir",away:"Por definir"},
+  {id:"SF_2",round:"Semifinal",home:"Por definir",away:"Por definir"},
+  {id:"THIRD",round:"Tercer Lugar",home:"Por definir",away:"Por definir"},
+  {id:"FINAL",round:"Final",home:"Por definir",away:"Por definir"},
 ];
 const ALL_MATCHES=[...GROUP_MATCHES,...KNOCKOUT_MATCHES];
+// Equipos clasificados a cada ronda — se actualiza manualmente
+const QUARTER_TEAMS=["Francia","Marruecos","España","Bélgica","Noruega","Inglaterra","Argentina","Suiza"];
+const SEMI_TEAMS=[]; // se llenará cuando terminen cuartos
+function teamsForRound(round){
+  if(round==="Semifinal"||round==="Tercer Lugar"||round==="Final") return SEMI_TEAMS.length?SEMI_TEAMS:QUARTER_TEAMS;
+  return ALL_TEAMS;
+}
+function getEffectiveMatches(kt){
+  const ED=["Semifinal","Tercer Lugar","Final"];
+  return ALL_MATCHES.map(m=>{
+    if(!ED.includes(m.round))return m;
+    const k=kt?.[m.id];
+    if(!k)return m;
+    return {...m,home:k.home||m.home,away:k.away||m.away};
+  });
+}
 
-function calcMatchPoints(pred,result){
+function calcMatchPoints(pred,result,match){
   if(!result||result.h===""||result.a==="")return 0;
   if(!pred||pred.h===""||pred.a==="")return 0;
+  if(match&&(match.home==="Por definir"||match.away==="Por definir"))return 0;
   const rH=parseInt(result.h),rA=parseInt(result.a),pH=parseInt(pred.h),pA=parseInt(pred.a);
   if(pH===rH&&pA===rA)return 3;
   const rW=rH>rA?"H":rH<rA?"A":"D",pW=pH>pA?"H":pH<pA?"A":"D";
@@ -582,6 +631,7 @@ export default function App(){
   const [newPlayerName,setNewPlayerName]=useState("");
   const [auditLog,setAuditLog]=useState([]);
   const [manualUnlocks,setManualUnlocks]=useState({});
+  const [knockoutTeams,setKnockoutTeams]=useState({});
   const [auditLoading,setAuditLoading]=useState(false);
   const [editingPlayer,setEditingPlayer]=useState(null);
   const [editPicks,setEditPicks]=useState({});
@@ -627,6 +677,8 @@ export default function App(){
       }
       const mu=await loadData("manualUnlocks");
       if(mu)setManualUnlocks(mu);
+      const kt=await loadData("knockoutTeams");
+      if(kt)setKnockoutTeams(kt);
       setLoading(false);
     }
     init();
@@ -710,36 +762,15 @@ export default function App(){
 
   async function handleSavePicks(){
     if(!me)return;setSaving(true);
-    // Cargar picks anteriores para detectar cambios
-    const prevPicks=await loadData(`picks_${me.id}`)||{};
-    const prevSpecial=await loadData(`special_${me.id}`)||{};
     await saveData(`picks_${me.id}`,myPicks);
     await saveData(`special_${me.id}`,mySpecial);
-    // Detectar qué partidos cambiaron
-    const changes=[];
-    const allIds=[...new Set([...Object.keys(myPicks),...Object.keys(prevPicks)])];
-    allIds.forEach(mid=>{
-      const prev=prevPicks[mid]||{h:"",a:""};
-      const curr=myPicks[mid]||{h:"",a:""};
-      const prevStr=`${prev.h}-${prev.a}`;
-      const currStr=`${curr.h}-${curr.a}`;
-      if(prevStr!==currStr){
-        const match=ALL_MATCHES.find(m=>m.id===mid);
-        const label=match?`${match.home} vs ${match.away}`:mid;
-        changes.push({id:mid,match:label,prev:prevStr||"—",curr:currStr||"—"});
-      }
-    });
-    // Detectar cambios en especiales
-    if((prevSpecial.champion||"")!==(mySpecial.champion||""))changes.push({id:"champion",match:"🏆 Campeón",prev:prevSpecial.champion||"—",curr:mySpecial.champion||"—"});
-    if((prevSpecial.scorer||"")!==(mySpecial.scorer||""))changes.push({id:"scorer",match:"👟 Goleador",prev:prevSpecial.scorer||"—",curr:mySpecial.scorer||"—"});
+    // Log de auditoría
     const logEntry={
       playerId:me.id,
       playerName:me.name,
       action:"update_picks",
       ts:new Date().toISOString(),
-      totalIngresados:Object.keys(myPicks).filter(k=>myPicks[k]?.h!=="").length,
-      changes,
-      summary:`Actualizó pronósticos — ${Object.keys(myPicks).filter(k=>myPicks[k]?.h!=="").length} partidos · ${changes.length} cambio(s)`
+      summary:`Actualizó pronósticos — ${Object.keys(myPicks).filter(k=>myPicks[k]?.h!=="").length} partidos ingresados`
     };
     try{
       await addDoc(collection(db,"auditlog"),logEntry);
@@ -943,7 +974,7 @@ export default function App(){
       const rows=await Promise.all(players.map(async p=>{
         const picks=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});
         const special=p.id===me?.id?mySpecial:(await loadData(`special_${p.id}`)||{});
-        let pts=0;ALL_MATCHES.forEach(m=>{pts+=calcMatchPoints(picks[m.id],results[m.id]);});
+        let pts=0;ALL_MATCHES.forEach(m=>{pts+=calcMatchPoints(picks[m.id],results[m.id],m);});
         pts+=calcSpecialPoints(special,adminSpecial);
         return{...p,pts};
       }));
@@ -1098,10 +1129,11 @@ export default function App(){
 
   // ── PICKS ─────────────────────────────────────────────────────────────────
   if(screen==="picks"){
-    const rounds=["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
     const roundLocked=isRoundLocked(activeRound);
     const roundAvail=isRoundAvailable(activeRound);
-    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
+    const effectiveMatches=getEffectiveMatches(knockoutTeams);
+    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:effectiveMatches.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
         <div style={topBar}>
@@ -1367,13 +1399,13 @@ export default function App(){
               <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>CUARTOS</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6"].map(id=>(<MatchBox key={id} id={id} label={id.replace("_","")}/>))}
+                  {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8"].map(id=>(<MatchBox key={id} id={id} label={id.replace("_","")}/>))}
                 </div>
               </div>
               <div style={{marginBottom:10}}>
                 <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:6}}>RONDA DE 32</p>
                 <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-                  {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12"].map(id=>(<MatchBox key={id} id={id} label={id.replace("R32_","R")}/>))}
+                  {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12","R32_13","R32_14","R32_15","R32_16"].map(id=>(<MatchBox key={id} id={id} label={id.replace("R32_","R")}/>))}
                 </div>
               </div>
             </div>
@@ -1799,7 +1831,7 @@ export default function App(){
           <div style={{marginBottom:10}}>
             <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:8}}>CUARTOS · 9-11 JUL</p>
             <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-              {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6"].map(id=>(
+              {["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8"].map(id=>(
                 <MatchBox key={id} id={id} label={id.replace("_","")}/>
               ))}
             </div>
@@ -1809,7 +1841,7 @@ export default function App(){
           <div style={{marginBottom:10}}>
             <p style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:3,color:C.gold,textAlign:"center",marginBottom:8}}>RONDA DE 32 · 28 JUN - 3 JUL</p>
             <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-              {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12"].map(id=>(
+              {["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12","R32_13","R32_14","R32_15","R32_16"].map(id=>(
                 <MatchBox key={id} id={id} label={id.replace("R32_","R")}/>
               ))}
             </div>
@@ -2034,8 +2066,9 @@ export default function App(){
 
   // ── ALL PICKS SCREEN ──────────────────────────────────────────────────────
   if(screen==="allPicks"){
-    const rounds=["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
-    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
+    const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const effectiveMatches=getEffectiveMatches(knockoutTeams);
+    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:effectiveMatches.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
         <div style={topBar}>
@@ -2109,8 +2142,9 @@ export default function App(){
 
   // ── ADMIN ─────────────────────────────────────────────────────────────────
   if(screen==="admin"){
-    const rounds=["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
-    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
+    const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+    const effectiveMatches=getEffectiveMatches(knockoutTeams);
+    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:effectiveMatches.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:60}}><GF/>{toast&&<Toast data={toast}/>}
         {/* EDIT PLAYER PICKS MODAL */}
@@ -2124,7 +2158,7 @@ export default function App(){
 
               {/* Round selector */}
               <div style={{display:"flex",overflowX:"auto",gap:5,marginBottom:8,paddingBottom:4}}>
-                {["Especiales","Grupos","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"].map(r=>(
+                {["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"].map(r=>(
                   <button key={r} style={r===editRound?tabOn:tabOff} onClick={()=>setEditRound(r)}>{r}</button>
                 ))}
               </div>
@@ -2221,7 +2255,7 @@ export default function App(){
           }}>🔄 Sync</button>
         </div>
         <div style={{display:"flex",padding:"8px 10px",gap:6,borderBottom:`1px solid rgba(201,168,76,0.08)`}}>
-          {[["resultados","⚽ Resultados"],["jugadores","👥 Jugadores"],["grupos","📊 Grupos"]].map(([t,l])=>(<button key={t} style={adminTab===t?tabOn:tabOff} onClick={()=>setAdminTab(t)}>{l}</button>))}
+          {[["resultados","⚽ Resultados"],["jugadores","👥 Jugadores"],["grupos","📊 Grupos"],["equipos","🏅 Equipos"]].map(([t,l])=>(<button key={t} style={adminTab===t?tabOn:tabOff} onClick={()=>setAdminTab(t)}>{l}</button>))}
         </div>
 
         {adminTab==="resultados"&&(
@@ -2349,26 +2383,86 @@ export default function App(){
                         <span style={{fontSize:12,fontWeight:700,color:isAdmin?C.gold:C.cream}}>{log.playerName}</span>
                         {isOverwrite&&<span style={{fontSize:9,background:"rgba(239,68,68,0.2)",color:"#fca5a5",padding:"1px 6px",borderRadius:8,fontWeight:700}}>⚠️ SOBREESCRIBIÓ</span>}
                         {isAdmin&&!isOverwrite&&<span style={{fontSize:9,background:"rgba(201,168,76,0.15)",color:C.gold,padding:"1px 6px",borderRadius:8}}>ADMIN</span>}
-                        {log.changes?.length>0&&!isAdmin&&<span style={{fontSize:9,background:"rgba(239,68,68,0.15)",color:"#fca5a5",padding:"1px 6px",borderRadius:8,fontWeight:700}}>{log.changes.length} cambio(s)</span>}
                       </div>
                       <p style={{fontSize:11,color:C.creamDim}}>{log.summary}</p>
                       {isOverwrite&&<p style={{fontSize:10,color:"#fca5a5",marginTop:3}}>Cambió: {log.prevResult} → {log.newResult}</p>}
                       {log.matchName&&<p style={{fontSize:10,color:"rgba(245,236,215,0.4)",marginTop:2}}>⚽ {log.matchName}</p>}
-                      {log.changes?.length>0&&(
-                        <div style={{marginTop:5,display:"flex",flexDirection:"column",gap:2}}>
-                          {log.changes.map((c,ci)=>(
-                            <p key={ci} style={{fontSize:10,color:c.prev==="—"?"rgba(74,94,58,0.9)":"#fca5a5",background:c.prev==="—"?"rgba(74,94,58,0.1)":"rgba(239,68,68,0.08)",padding:"2px 7px",borderRadius:6}}>
-                              {c.prev==="—"?"➕":"✏️"} <strong>{c.match}</strong>: {c.prev} → {c.curr}
-                            </p>
-                          ))}
-                        </div>
-                      )}
                     </div>
                     <span style={{fontSize:10,color:"rgba(245,236,215,0.3)",whiteSpace:"nowrap"}}>{timeStr}</span>
                   </div>
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {adminTab==="equipos"&&(
+          <div style={{padding:"10px"}}>
+            <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:12,letterSpacing:1,marginBottom:4}}>🏅 EQUIPOS SEMIFINALES & FINAL</p>
+            <p style={{color:"rgba(245,236,215,0.3)",fontSize:11,marginBottom:6}}>Solo equipos clasificados a cuartos disponibles como opciones.</p>
+            <div style={{padding:"8px 10px",background:"rgba(201,168,76,0.06)",border:`1px solid ${C.border}`,borderRadius:10,marginBottom:14}}>
+              <p style={{fontSize:10,color:"rgba(245,236,215,0.4)",letterSpacing:1,marginBottom:6}}>🏆 CLASIFICADOS A CUARTOS</p>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{QUARTER_TEAMS.map(t=>(<span key={t} style={{background:"rgba(201,168,76,0.12)",border:`1px solid ${C.border}`,borderRadius:20,padding:"3px 10px",fontSize:11,color:C.cream}}>{FLAGS[t]||"🏳️"} {t}</span>))}</div>
+            </div>
+            {[
+              {label:"🔴 SEMIFINALES",ids:["SF_1","SF_2"]},
+              {label:"🏆 FINAL & 3ER LUGAR",ids:["FINAL","THIRD"]},
+            ].map(({label,ids})=>(
+              <div key={label} style={{marginBottom:16,background:"rgba(92,26,39,0.1)",border:`1px solid ${C.border}`,borderRadius:13,overflow:"hidden"}}>
+                <div style={{background:"rgba(201,168,76,0.12)",padding:"8px 12px",borderBottom:`1px solid ${C.border}`}}>
+                  <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:11,letterSpacing:2}}>{label}</p>
+                </div>
+                {ids.map(id=>{
+                  const cur=knockoutTeams[id]||{home:"",away:""};
+                  const isLocked=isMatchLocked(id,manualUnlocks);
+                  const saveField=async(field,val)=>{
+                    const updated={...knockoutTeams,[id]:{...cur,[field]:val}};
+                    setKnockoutTeams(updated);
+                    await saveData("knockoutTeams",updated);
+                    showToast(`✅ ${id} guardado`);
+                  };
+                  return(
+                    <div key={id} style={{padding:"10px 12px",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                        <p style={{fontSize:10,color:"rgba(245,236,215,0.4)",letterSpacing:1,textTransform:"uppercase"}}>{id.replace("_"," ")}</p>
+                        <button onClick={async()=>{
+                          const newVal=isLocked?"open":"closed";
+                          const updated={...manualUnlocks,[id]:newVal};
+                          setManualUnlocks(updated);await saveData("manualUnlocks",updated);
+                          showToast(newVal==="open"?"🔓 Abierto":"🔒 Cerrado");
+                        }} style={{background:isLocked?"rgba(34,197,94,0.12)":"rgba(239,68,68,0.12)",border:`1px solid ${isLocked?"rgba(34,197,94,0.3)":"rgba(239,68,68,0.3)"}`,color:isLocked?"#22c55e":"#fca5a5",padding:"4px 10px",borderRadius:8,fontSize:11,cursor:"pointer",fontFamily:"'Barlow',sans-serif",fontWeight:700}}>
+                          {isLocked?"🔓 Abrir":"🔒 Cerrar"}
+                        </button>
+                      </div>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        <div style={{flex:1}}>
+                          <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginBottom:3}}>LOCAL</p>
+                          <select style={{width:"100%",background:"rgba(26,10,14,0.8)",border:`1px solid ${cur.home?C.gold:C.border}`,color:cur.home?C.cream:"rgba(245,236,215,0.4)",padding:"7px 8px",borderRadius:8,fontSize:12,fontFamily:"'Barlow',sans-serif"}}
+                            value={cur.home||""} onChange={e=>saveField("home",e.target.value)}>
+                            <option value="">— Sin definir —</option>
+                            {QUARTER_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
+                          </select>
+                        </div>
+                        <span style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700}}>VS</span>
+                        <div style={{flex:1}}>
+                          <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginBottom:3}}>VISITANTE</p>
+                          <select style={{width:"100%",background:"rgba(26,10,14,0.8)",border:`1px solid ${cur.away?C.gold:C.border}`,color:cur.away?C.cream:"rgba(245,236,215,0.4)",padding:"7px 8px",borderRadius:8,fontSize:12,fontFamily:"'Barlow',sans-serif"}}
+                            value={cur.away||""} onChange={e=>saveField("away",e.target.value)}>
+                            <option value="">— Sin definir —</option>
+                            {QUARTER_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      {cur.home&&cur.away&&(
+                        <div style={{marginTop:8,padding:"5px 10px",background:"rgba(74,94,58,0.15)",border:"1px solid rgba(74,94,58,0.3)",borderRadius:8,textAlign:"center"}}>
+                          <p style={{fontSize:12,color:"#6B8A52",fontWeight:700}}>{FLAGS[cur.home]||"🏳️"} {cur.home} vs {cur.away} {FLAGS[cur.away]||"🏳️"}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         )}
 
@@ -2450,8 +2544,8 @@ function HomeApodos({players,results,adminSpecial,me,myPicks,mySpecial,loadData}
         const special=p.id===me?.id?mySpecial:(await loadData(`special_${p.id}`)||{});
         let pts=0,exact=0,goalsHit=0;
         const ALL_M=[...Object.entries({A:["México","Sudáfrica","Corea del Sur","Chequia"],B:["Canadá","Bosnia y Herzegovina","Catar","Suiza"],C:["Brasil","Marruecos","Haití","Escocia"],D:["EE.UU.","Paraguay","Australia","Turquía"],E:["Alemania","Curazao","Costa de Marfil","Ecuador"],F:["Países Bajos","Japón","Suecia","Túnez"],G:["Bélgica","Egipto","Irán","Nueva Zelanda"],H:["España","Cabo Verde","Arabia Saudita","Uruguay"],I:["Francia","Senegal","Irak","Noruega"],J:["Argentina","Argelia","Austria","Jordania"],K:["Portugal","R.D. del Congo","Uzbekistán","Colombia"],L:["Inglaterra","Croacia","Ghana","Panamá"]}).flatMap(([g,t])=>[`${g}1`,`${g}2`,`${g}3`,`${g}4`,`${g}5`,`${g}6`]),
-          "R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12",
-          "QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","SF_1","SF_2","SF_3","THIRD","FINAL"
+          "R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12","R32_13","R32_14","R32_15","R32_16",
+          "QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8","SF_1","SF_2","SF_3","THIRD","FINAL"
         ];
         Object.entries(results).forEach(([mid,result])=>{
           if(!result||result.h==="")return;
