@@ -542,7 +542,7 @@ const KNOCKOUT_MATCHES=[
 ];
 const ALL_MATCHES=[...GROUP_MATCHES,...KNOCKOUT_MATCHES];
 // IDs de todas las rondas eliminatorias (Ronda de 32 en adelante)
-const ELIM_IDS=["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12","R32_13","R32_14","R32_15","R32_16","QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8","CF_1","CF_2","CF_3","CF_4","SF_1","SF_2","THIRD","FINAL"];
+const ELIM_IDS=["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8","CF_1","CF_2","CF_3","CF_4","SF_1","SF_2","THIRD","FINAL"];
 
 function calcMatchPoints(pred,result,match){
   if(!result||result.h===""||result.a==="")return 0;
@@ -566,14 +566,22 @@ const Flag=({name})=><span style={{fontSize:18}}>{FLAGS[name]||"🏳️"}</span>
 const C={granateDk:"#3D0F18",gold:"#C9A84C",goldLt:"#E8C96A",olive:"#4A5E3A",oliveLt:"#6B8A52",cream:"#F5ECD7",creamDim:"rgba(245,236,215,0.6)",creamFaint:"rgba(245,236,215,0.06)",bg:"#1A0A0E",border:"rgba(201,168,76,0.25)"};
 
 function KnockoutScreen({players,results,me,myPicks,loadData,showToast,setScreen}){
+  const ROUNDS_CONFIG=[
+    {round:"Octavos",ids:["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8"]},
+    {round:"Cuartos",ids:["CF_1","CF_2","CF_3","CF_4"]},
+    {round:"Semifinal",ids:["SF_1","SF_2"]},
+    {round:"Tercer Lugar",ids:["THIRD"]},
+    {round:"Final",ids:["FINAL"]},
+  ];
   const ELIM_MATCHES_K=ALL_MATCHES.filter(m=>ELIM_IDS.includes(m.id));
   const [kData,setKData]=React.useState(null);
   const [kLoading,setKLoading]=React.useState(false);
   const [editId,setEditId]=React.useState(null);
   const [editPks,setEditPks]=React.useState({});
-  const [kTab,setKTab]=React.useState("tabla"); // "tabla" | "detalle"
+  const [kTab,setKTab]=React.useState("tabla");
+  const [activeRonda,setActiveRonda]=React.useState("Octavos");
   const isAdmin=me?.pass===ADMIN_PASSWORD;
-  const C2={gold:"#C9A84C",cream:"#F5ECD7",creamDim:"rgba(245,236,215,0.6)",border:"rgba(201,168,76,0.25)",bg:"#1A0A0E"};
+  const C2={gold:"#C9A84C",cream:"#F5ECD7",creamDim:"rgba(245,236,215,0.6)",border:"rgba(201,168,76,0.25)"};
   const tOn={background:"rgba(201,168,76,0.15)",border:"1px solid rgba(201,168,76,0.4)",color:"#C9A84C",padding:"5px 14px",borderRadius:20,fontSize:11,cursor:"pointer",fontWeight:700,fontFamily:"'Barlow',sans-serif"};
   const tOff={background:"rgba(245,236,215,0.03)",border:"1px solid rgba(245,236,215,0.05)",color:"rgba(245,236,215,0.3)",padding:"5px 14px",borderRadius:20,fontSize:11,cursor:"pointer",fontFamily:"'Barlow',sans-serif"};
   const bG={background:"linear-gradient(135deg,#8B5E0A,#C9A84C)",color:"#1A0A0E",border:"none",padding:"12px 20px",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"'Cinzel',serif"};
@@ -584,13 +592,24 @@ function KnockoutScreen({players,results,me,myPicks,loadData,showToast,setScreen
     setKLoading(true);
     const rows=await Promise.all(players.map(async p=>{
       const picks=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});
-      let pts=0,exact=0,win=0;
-      ELIM_MATCHES_K.forEach(m=>{
-        const r=results[m.id],pk=picks[m.id],p2=calcMatchPoints(pk,r,m);
-        pts+=p2; if(p2===3)exact++; else if(p2===2)win++;
+      let totalPts=0,totalExact=0,totalWin=0;
+      const byRound={};
+      ROUNDS_CONFIG.forEach(({round,ids})=>{
+        let pts=0,exact=0,win=0;
+        ids.forEach(id=>{
+          const m=ALL_MATCHES.find(x=>x.id===id);
+          const r=results[id],pk=picks[id];
+          const p2=calcMatchPoints(pk,r,m);
+          pts+=p2; if(p2===3)exact++; else if(p2===2)win++;
+        });
+        byRound[round]={pts,exact,win};
+        totalPts+=pts; totalExact+=exact; totalWin+=win;
       });
-      const missing=ELIM_MATCHES_K.filter(m=>{const r=results[m.id],pk=picks[m.id];return r&&r.h!==""&&(!pk||pk.h==="");});
-      return{...p,pts,exact,win,picks,missing};
+      const missing=ELIM_MATCHES_K.filter(m=>{
+        const r=results[m.id],pk=picks[m.id];
+        return r&&r.h!==""&&(!pk||pk.h==="");
+      });
+      return{...p,pts:totalPts,exact:totalExact,win:totalWin,picks,missing,byRound};
     }));
     setKData(rows.sort((a,b)=>b.pts-a.pts));
     setKLoading(false);
@@ -605,31 +624,26 @@ function KnockoutScreen({players,results,me,myPicks,loadData,showToast,setScreen
 
   React.useEffect(()=>{load();},[]);
 
-  // Agrupar partidos por ronda para el detalle
-  const ROUND_ORDER=["Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
-  const byRound=ROUND_ORDER.map(r=>({round:r,matches:ELIM_MATCHES_K.filter(m=>m.round===r)}));
+  const activeRondaConfig=ROUNDS_CONFIG.find(r=>r.round===activeRonda)||ROUNDS_CONFIG[0];
+  const activeMatches=ALL_MATCHES.filter(m=>activeRondaConfig.ids.includes(m.id));
 
   return(
     <div style={{minHeight:"100vh",background:"radial-gradient(ellipse at top,#3D0F18 0%,#1A0A0E 55%)",fontFamily:"'Barlow',sans-serif",color:"#F5ECD7",paddingBottom:40}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:"rgba(26,10,14,0.88)",borderBottom:"1px solid rgba(201,168,76,0.25)",position:"sticky",top:0,zIndex:10,backdropFilter:"blur(20px)"}}>
         <button style={{background:"none",border:"none",color:"rgba(245,236,215,0.3)",cursor:"pointer",fontSize:13,fontFamily:"'Barlow',sans-serif"}} onClick={()=>setScreen("home")}>← Inicio</button>
-        <p style={{fontFamily:"'Cinzel',serif",fontSize:12,color:C2.gold,letterSpacing:2}}>⚡ ELIMINATORIOS</p>
+        <p style={{fontFamily:"'Cinzel',serif",fontSize:12,color:C2.gold,letterSpacing:2}}>⚡ 8VOS → FINAL</p>
         <button style={{background:"rgba(201,168,76,0.1)",border:"1px solid rgba(201,168,76,0.25)",color:C2.gold,padding:"6px 12px",borderRadius:8,fontSize:12,cursor:"pointer",fontWeight:700}} onClick={()=>{setKData(null);load();}}>🔄</button>
       </div>
-
-      {/* Tabs */}
       <div style={{display:"flex",padding:"8px 10px",gap:6,borderBottom:"1px solid rgba(201,168,76,0.08)"}}>
-        {[["tabla","📊 Puntos"],["detalle","🎯 Detalle"]].map(([t,l])=>(
+        {[["tabla","📊 Total"],["detalle","🎯 Por Ronda"]].map(([t,l])=>(
           <button key={t} style={kTab===t?tOn:tOff} onClick={()=>setKTab(t)}>{l}</button>
         ))}
       </div>
-
       {kLoading&&<p style={{color:C2.creamDim,textAlign:"center",padding:30}}>Calculando...</p>}
 
-      {/* ── TABLA RESUMEN ── */}
       {kTab==="tabla"&&kData&&(
         <div style={{padding:"10px"}}>
-          <p style={{color:"rgba(245,236,215,0.35)",fontSize:10,textAlign:"center",marginBottom:10}}>2pts ganador · 3pts exacto · Octavos hasta Final</p>
+          <p style={{color:"rgba(245,236,215,0.35)",fontSize:10,textAlign:"center",marginBottom:10}}>Puntos de Octavos hasta Final · 2pts ganador · 3pts exacto</p>
           {kData.map((p,i)=>(
             <div key={p.id} style={{background:i===0?"linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.04))":"rgba(92,26,39,0.08)",border:i===0?`1px solid ${C2.gold}`:"1px solid rgba(201,168,76,0.06)",borderRadius:12,padding:"12px 14px",marginBottom:6}}>
               <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -637,6 +651,15 @@ function KnockoutScreen({players,results,me,myPicks,loadData,showToast,setScreen
                 <div style={{flex:1}}>
                   <p style={{fontSize:14,fontWeight:700,color:i===0?C2.gold:C2.cream}}>{p.name}</p>
                   <p style={{fontSize:10,color:"rgba(245,236,215,0.35)",marginTop:2}}>✨{p.exact} exactos · ✅{p.win} ganadores{p.missing?.length>0?` · ⚠️${p.missing.length} sin pronóstico`:""}</p>
+                  <div style={{display:"flex",gap:5,marginTop:5,flexWrap:"wrap"}}>
+                    {ROUNDS_CONFIG.map(({round})=>{
+                      const rd=p.byRound?.[round]||{pts:0};
+                      const short={"Octavos":"8vos","Cuartos":"4tos","Semifinal":"Semi","Tercer Lugar":"3ro","Final":"Final"}[round];
+                      return rd.pts>0?(
+                        <span key={round} style={{fontSize:9,background:"rgba(201,168,76,0.1)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:8,padding:"2px 6px",color:C2.gold}}>{short}: {rd.pts}pts</span>
+                      ):null;
+                    })}
+                  </div>
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <span style={{fontFamily:"'Cinzel',serif",fontSize:24,color:C2.gold,fontWeight:900}}>{p.pts}<span style={{fontSize:10,color:"rgba(245,236,215,0.3)",fontFamily:"'Barlow',sans-serif"}}> pts</span></span>
@@ -654,28 +677,24 @@ function KnockoutScreen({players,results,me,myPicks,loadData,showToast,setScreen
         </div>
       )}
 
-      {/* ── DETALLE POR RONDA ── */}
       {kTab==="detalle"&&kData&&(
-        <div style={{padding:"10px",overflowX:"auto"}}>
-          {byRound.map(({round,matches})=>matches.length===0?null:(
-            <div key={round} style={{marginBottom:16}}>
-              <p style={{fontFamily:"'Cinzel',serif",color:C2.gold,fontSize:10,letterSpacing:3,marginBottom:8,textAlign:"center"}}>{round.toUpperCase()}</p>
-              {/* Header de partidos */}
-              <div style={{display:"flex",gap:2,marginBottom:4,paddingLeft:100}}>
-                {matches.map(m=>(
-                  <div key={m.id} style={{minWidth:72,textAlign:"center",flexShrink:0}}>
-                    <p style={{fontSize:13,lineHeight:1}}>{FLAGS[m.home]||"🏳️"}{FLAGS[m.away]||"🏳️"}</p>
-                    {results[m.id]?.h!==""&&<p style={{fontSize:8,color:"rgba(245,236,215,0.4)"}}>{results[m.id]?.h}-{results[m.id]?.a}</p>}
-                  </div>
-                ))}
-              </div>
-              {/* Fila por jugador */}
-              {kData.map(p=>(
-                <div key={p.id} style={{display:"flex",alignItems:"center",gap:2,marginBottom:3}}>
-                  <div style={{width:100,flexShrink:0,paddingRight:6}}>
-                    <p style={{fontSize:11,color:p.id===me?.id?"#6B8A52":C2.cream,fontWeight:p.id===me?.id?700:400,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</p>
-                  </div>
-                  {matches.map(m=>{
+        <div style={{padding:"10px"}}>
+          <div style={{display:"flex",overflowX:"auto",gap:5,marginBottom:12,paddingBottom:2}}>
+            {ROUNDS_CONFIG.map(({round})=>(
+              <button key={round} style={activeRonda===round?tOn:tOff} onClick={()=>setActiveRonda(round)}>{round}</button>
+            ))}
+          </div>
+          {[...kData].sort((a,b)=>(b.byRound?.[activeRonda]?.pts||0)-(a.byRound?.[activeRonda]?.pts||0)).map((p,i)=>{
+            const rd=p.byRound?.[activeRonda]||{pts:0,exact:0,win:0};
+            return(
+              <div key={p.id} style={{background:i===0?"linear-gradient(135deg,rgba(201,168,76,0.1),rgba(201,168,76,0.03))":"rgba(92,26,39,0.06)",border:i===0?`1px solid ${C2.gold}`:"1px solid rgba(201,168,76,0.06)",borderRadius:10,padding:"10px 12px",marginBottom:5}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                  <span style={{fontSize:16,minWidth:24,textAlign:"center"}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</span>
+                  <p style={{flex:1,fontSize:13,fontWeight:700,color:i===0?C2.gold:C2.cream}}>{p.name}</p>
+                  <span style={{fontFamily:"'Cinzel',serif",fontSize:20,color:C2.gold,fontWeight:900}}>{rd.pts}<span style={{fontSize:10,color:"rgba(245,236,215,0.3)",fontFamily:"'Barlow',sans-serif"}}> pts</span></span>
+                </div>
+                <div style={{display:"flex",gap:4,flexWrap:"wrap",paddingLeft:32}}>
+                  {activeMatches.map(m=>{
                     const pick=p.picks?.[m.id]||{h:"",a:""};
                     const r=results[m.id];
                     const pts2=calcMatchPoints(pick,r,m);
@@ -684,22 +703,21 @@ function KnockoutScreen({players,results,me,myPicks,loadData,showToast,setScreen
                     const bg=!hasPick&&hasResult?"rgba(127,29,29,0.5)":pts2===3?"rgba(34,197,94,0.2)":pts2===2?"rgba(122,75,0,0.25)":hasResult&&hasPick?"rgba(92,26,39,0.4)":"rgba(255,255,255,0.03)";
                     const bc=!hasPick&&hasResult?"rgba(239,68,68,0.5)":pts2===3?"rgba(34,197,94,0.5)":pts2===2?"rgba(201,168,76,0.4)":"rgba(255,255,255,0.06)";
                     return(
-                      <div key={m.id} style={{minWidth:72,textAlign:"center",background:bg,border:`1px solid ${bc}`,borderRadius:6,padding:"4px 2px",flexShrink:0}}>
-                        <p style={{fontSize:12,fontFamily:"'Cinzel',serif",fontWeight:700,color:pts2===3?"#22c55e":pts2===2?"#C9A84C":!hasPick&&hasResult?"#fca5a5":"rgba(245,236,215,0.4)"}}>
-                          {hasPick?`${pick.h}-${pick.a}`:"—"}
-                        </p>
-                        {pts2>0&&<p style={{fontSize:8,color:pts2===3?"#22c55e":"#C9A84C"}}>{pts2===3?"✨":"✅"}{pts2}pts</p>}
+                      <div key={m.id} style={{background:bg,border:`1px solid ${bc}`,borderRadius:6,padding:"4px 6px",textAlign:"center",minWidth:70}}>
+                        <p style={{fontSize:11,lineHeight:1,marginBottom:1}}>{FLAGS[m.home]||"🏳️"}{FLAGS[m.away]||"🏳️"}</p>
+                        {hasResult&&<p style={{fontSize:8,color:"rgba(245,236,215,0.35)",marginBottom:1}}>{r.h}-{r.a}</p>}
+                        <p style={{fontSize:12,fontFamily:"'Cinzel',serif",fontWeight:700,color:pts2===3?"#22c55e":pts2===2?"#C9A84C":!hasPick&&hasResult?"#fca5a5":"rgba(245,236,215,0.4)"}}>{hasPick?`${pick.h}-${pick.a}`:"—"}</p>
+                        {pts2>0&&<p style={{fontSize:8,color:pts2===3?"#22c55e":"#C9A84C"}}>{pts2===3?"✨":"✅"}{pts2}p</p>}
                       </div>
                     );
                   })}
                 </div>
-              ))}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* MODAL EDITAR */}
       {editId&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:100,overflowY:"auto"}}>
           <div style={{background:"#1A0A0E",border:`1px solid ${C2.border}`,borderRadius:16,padding:"20px 16px",margin:"20px auto",maxWidth:400}}>
