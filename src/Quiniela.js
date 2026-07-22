@@ -542,12 +542,6 @@ const KNOCKOUT_MATCHES=[
 ];
 const ALL_MATCHES=[...GROUP_MATCHES,...KNOCKOUT_MATCHES];
 const ELIM_IDS=["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8","QF_7","QF_8","CF_1","CF_2","CF_3","CF_4","SF_1","SF_2","THIRD","FINAL"];
-function getEffectiveMatches(kt){
-  return ALL_MATCHES.map(m=>{
-    const k=kt?.[m.id]; if(!k)return m;
-    return {...m,home:k.home||m.home,away:k.away||m.away};
-  });
-}
 
 function calcMatchPoints(pred,result,match){
   if(!result||result.h===""||result.a==="")return 0;
@@ -568,144 +562,170 @@ function calcSpecialPoints(s,a){
 const Flag=({name})=><span style={{fontSize:18}}>{FLAGS[name]||"🏳️"}</span>;
 const C={granateDk:"#3D0F18",gold:"#C9A84C",goldLt:"#E8C96A",olive:"#4A5E3A",oliveLt:"#6B8A52",cream:"#F5ECD7",creamDim:"rgba(245,236,215,0.6)",creamFaint:"rgba(245,236,215,0.06)",bg:"#1A0A0E",border:"rgba(201,168,76,0.25)"};
 
-// ── PANTALLA PUNTOS ELIMINATORIOS ────────────────────────────────────────
-function KnockoutScreen({players,results,me,myPicks,loadData,showToast,setScreen,ADMIN_PASSWORD}){
-  const ELIM_MATCHES_LOCAL=ALL_MATCHES.filter(m=>ELIM_IDS.includes(m.id));
-  const [elimData,setElimData]=React.useState(null);
-  const [elimLoading,setElimLoading]=React.useState(false);
-  const [editingElim,setEditingElim]=React.useState(null);
-  const [editElimPicks,setEditElimPicks]=React.useState({});
+function KnockoutScreen({players,results,me,myPicks,loadData,showToast,setScreen}){
+  const ELIM_MATCHES_K=ALL_MATCHES.filter(m=>ELIM_IDS.includes(m.id));
+  const [kData,setKData]=React.useState(null);
+  const [kLoading,setKLoading]=React.useState(false);
+  const [editId,setEditId]=React.useState(null);
+  const [editPks,setEditPks]=React.useState({});
+  const [kTab,setKTab]=React.useState("tabla"); // "tabla" | "detalle"
   const isAdmin=me?.pass===ADMIN_PASSWORD;
+  const C2={gold:"#C9A84C",cream:"#F5ECD7",creamDim:"rgba(245,236,215,0.6)",border:"rgba(201,168,76,0.25)",bg:"#1A0A0E"};
+  const tOn={background:"rgba(201,168,76,0.15)",border:"1px solid rgba(201,168,76,0.4)",color:"#C9A84C",padding:"5px 14px",borderRadius:20,fontSize:11,cursor:"pointer",fontWeight:700,fontFamily:"'Barlow',sans-serif"};
+  const tOff={background:"rgba(245,236,215,0.03)",border:"1px solid rgba(245,236,215,0.05)",color:"rgba(245,236,215,0.3)",padding:"5px 14px",borderRadius:20,fontSize:11,cursor:"pointer",fontFamily:"'Barlow',sans-serif"};
+  const bG={background:"linear-gradient(135deg,#8B5E0A,#C9A84C)",color:"#1A0A0E",border:"none",padding:"12px 20px",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"'Cinzel',serif"};
+  const bO={background:"rgba(201,168,76,0.04)",color:"#C9A84C",border:"1px solid rgba(201,168,76,0.25)",padding:"12px 20px",borderRadius:12,fontSize:13,cursor:"pointer",fontFamily:"'Barlow',sans-serif"};
+  const sI={width:44,textAlign:"center",background:"rgba(26,10,14,0.7)",border:"1px solid rgba(201,168,76,0.3)",color:"#F5ECD7",padding:"8px 2px",borderRadius:8,fontSize:18,fontWeight:700,fontFamily:"'Cinzel',serif"};
 
-  async function loadElimData(){
-    setElimLoading(true);
+  async function load(){
+    setKLoading(true);
     const rows=await Promise.all(players.map(async p=>{
       const picks=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});
-      let pts=0,exact=0,winner=0;
-      ELIM_MATCHES_LOCAL.forEach(m=>{
-        const r=results[m.id],pick=picks[m.id];
-        const p2=calcMatchPoints(pick,r,m);
-        pts+=p2; if(p2===3)exact++; else if(p2===2)winner++;
+      let pts=0,exact=0,win=0;
+      ELIM_MATCHES_K.forEach(m=>{
+        const r=results[m.id],pk=picks[m.id],p2=calcMatchPoints(pk,r,m);
+        pts+=p2; if(p2===3)exact++; else if(p2===2)win++;
       });
-      const missing=ELIM_MATCHES_LOCAL.filter(m=>{
-        const r=results[m.id],pick=picks[m.id];
-        return r&&r.h!==""&&(!pick||pick.h==="");
-      }).map(m=>m.id);
-      return{...p,pts,exact,winner,picks,missing};
+      const missing=ELIM_MATCHES_K.filter(m=>{const r=results[m.id],pk=picks[m.id];return r&&r.h!==""&&(!pk||pk.h==="");});
+      return{...p,pts,exact,win,picks,missing};
     }));
-    setElimData(rows.sort((a,b)=>b.pts-a.pts));
-    setElimLoading(false);
+    setKData(rows.sort((a,b)=>b.pts-a.pts));
+    setKLoading(false);
   }
 
-  async function saveElimPicks(playerId){
-    const prev=playerId===me?.id?myPicks:(await loadData(`picks_${playerId}`)||{});
-    const merged={...prev,...editElimPicks};
-    await saveData(`picks_${playerId}`,merged);
-    showToast("✅ Pronósticos guardados");
-    setEditingElim(null);
-    setElimData(null);
-    loadElimData();
+  async function savePks(pid){
+    const prev=pid===me?.id?myPicks:(await loadData(`picks_${pid}`)||{});
+    await saveData(`picks_${pid}`,{...prev,...editPks});
+    showToast("✅ Guardado");
+    setEditId(null); setKData(null); load();
   }
 
-  React.useEffect(()=>{loadElimData();},[]);
+  React.useEffect(()=>{load();},[]);
 
-  const C={gold:"#C9A84C",cream:"#F5ECD7",creamDim:"rgba(245,236,215,0.6)",border:"rgba(201,168,76,0.25)",bg:"#1A0A0E",granateDk:"#3D0F18"};
-  const btnGold={background:"linear-gradient(135deg,#8B5E0A,#C9A84C)",color:"#1A0A0E",border:"none",padding:"13px 20px",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",width:"100%",fontFamily:"'Cinzel',serif",letterSpacing:1};
-  const btnOutline={background:"rgba(201,168,76,0.04)",color:"#C9A84C",border:"1px solid rgba(201,168,76,0.25)",padding:"13px 20px",borderRadius:12,fontSize:13,fontWeight:600,cursor:"pointer",width:"100%",fontFamily:"'Barlow',sans-serif"};
-  const scoreInput={width:40,textAlign:"center",background:"rgba(26,10,14,0.6)",border:"1px solid rgba(201,168,76,0.25)",color:"#F5ECD7",padding:"7px 2px",borderRadius:8,fontSize:18,fontWeight:700,fontFamily:"'Cinzel',serif"};
-  const pageRoot={minHeight:"100vh",background:`radial-gradient(ellipse at top,#3D0F18 0%,#1A0A0E 55%)`,fontFamily:"'Barlow',sans-serif",color:"#F5ECD7"};
-  const topBar={display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:"rgba(26,10,14,0.88)",borderBottom:"1px solid rgba(201,168,76,0.25)",position:"sticky",top:0,zIndex:10,backdropFilter:"blur(20px)"};
-  const backBtn={background:"none",border:"none",color:"rgba(245,236,215,0.3)",cursor:"pointer",fontSize:13,fontFamily:"'Barlow',sans-serif"};
-  const saveBtnStyle={background:"rgba(201,168,76,0.1)",border:"1px solid rgba(201,168,76,0.25)",color:"#C9A84C",padding:"6px 12px",borderRadius:8,fontSize:12,cursor:"pointer",fontWeight:700,fontFamily:"'Barlow',sans-serif"};
+  // Agrupar partidos por ronda para el detalle
+  const ROUND_ORDER=["Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+  const byRound=ROUND_ORDER.map(r=>({round:r,matches:ELIM_MATCHES_K.filter(m=>m.round===r)}));
 
   return(
-    <div style={{...pageRoot,paddingBottom:40}}>
-      <div style={topBar}>
-        <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
-        <p style={{fontFamily:"'Cinzel',serif",fontSize:12,color:C.gold,letterSpacing:2}}>⚡ OCTAVOS → FINAL</p>
-        <button style={saveBtnStyle} onClick={()=>{setElimData(null);loadElimData();}}>🔄</button>
+    <div style={{minHeight:"100vh",background:"radial-gradient(ellipse at top,#3D0F18 0%,#1A0A0E 55%)",fontFamily:"'Barlow',sans-serif",color:"#F5ECD7",paddingBottom:40}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:"rgba(26,10,14,0.88)",borderBottom:"1px solid rgba(201,168,76,0.25)",position:"sticky",top:0,zIndex:10,backdropFilter:"blur(20px)"}}>
+        <button style={{background:"none",border:"none",color:"rgba(245,236,215,0.3)",cursor:"pointer",fontSize:13,fontFamily:"'Barlow',sans-serif"}} onClick={()=>setScreen("home")}>← Inicio</button>
+        <p style={{fontFamily:"'Cinzel',serif",fontSize:12,color:C2.gold,letterSpacing:2}}>⚡ 8VOS → FINAL</p>
+        <button style={{background:"rgba(201,168,76,0.1)",border:"1px solid rgba(201,168,76,0.25)",color:C2.gold,padding:"6px 12px",borderRadius:8,fontSize:12,cursor:"pointer",fontWeight:700}} onClick={()=>{setKData(null);load();}}>🔄</button>
       </div>
 
-      <div style={{padding:"10px"}}>
-        <div style={{padding:"8px 12px",background:"rgba(201,168,76,0.06)",border:`1px solid ${C.border}`,borderRadius:10,marginBottom:12}}>
-          <p style={{color:"rgba(245,236,215,0.4)",fontSize:10,textAlign:"center"}}>Puntos de Octavos de Final → Final · 2pts ganador · 3pts exacto</p>
-        </div>
-
-        {elimLoading&&<p style={{color:C.creamDim,textAlign:"center",padding:30}}>Calculando...</p>}
-
-        {elimData&&elimData.map((p,i)=>(
-          <div key={p.id} style={{background:i===0?"linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.04))":"rgba(92,26,39,0.08)",border:i===0?`1px solid ${C.gold}`:`1px solid rgba(201,168,76,0.06)`,borderRadius:12,padding:"10px 12px",marginBottom:8}}>
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-              <span style={{fontSize:18,minWidth:28,textAlign:"center"}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</span>
-              <div style={{flex:1}}>
-                <p style={{fontSize:14,fontWeight:700,color:i===0?C.gold:C.cream}}>{p.name}</p>
-                <p style={{fontSize:10,color:"rgba(245,236,215,0.35)",marginTop:1}}>✨{p.exact} exactos · ✅{p.winner} ganadores</p>
-                {p.missing?.length>0&&<p style={{fontSize:9,color:"#fca5a5",marginTop:2}}>⚠️ Sin pronóstico: {p.missing.join(" · ")}</p>}
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:6}}>
-                <span style={{fontFamily:"'Cinzel',serif",fontSize:22,color:C.gold,fontWeight:900}}>{p.pts}<span style={{fontSize:10,color:"rgba(245,236,215,0.3)",fontFamily:"'Barlow',sans-serif"}}> pts</span></span>
-                {isAdmin&&(
-                  <button onClick={async()=>{
-                    const picks=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});
-                    const only={}; ELIM_IDS.forEach(id=>{if(picks[id])only[id]=picks[id];});
-                    setEditElimPicks(only); setEditingElim(p.id);
-                  }} style={{background:"rgba(201,168,76,0.1)",border:`1px solid ${C.border}`,color:C.gold,padding:"4px 10px",borderRadius:8,fontSize:11,cursor:"pointer",fontFamily:"'Barlow',sans-serif",fontWeight:700}}>✏️</button>
-                )}
-              </div>
-            </div>
-            {/* picks grid */}
-            <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
-              {ELIM_MATCHES_LOCAL.map(m=>{
-                const pick=p.picks?.[m.id]||{h:"",a:""};
-                const r=results[m.id];
-                const pts2=calcMatchPoints(pick,r,m);
-                const hasPick=pick.h!=="";
-                const hasResult=r&&r.h!=="";
-                const bg=!hasPick&&!hasResult?"rgba(255,255,255,0.02)":!hasPick&&hasResult?"rgba(127,29,29,0.4)":!hasResult?"rgba(201,168,76,0.06)":pts2===3?"rgba(34,197,94,0.15)":pts2===2?"rgba(122,75,0,0.2)":"rgba(92,26,39,0.3)";
-                const bc=!hasPick&&hasResult?"rgba(239,68,68,0.5)":!hasResult?"rgba(201,168,76,0.15)":pts2===3?"rgba(34,197,94,0.4)":pts2===2?"rgba(201,168,76,0.3)":"rgba(92,26,39,0.5)";
-                return(
-                  <div key={m.id} style={{background:bg,border:`1px solid ${bc}`,borderRadius:6,padding:"3px 6px",minWidth:52,textAlign:"center"}}>
-                    <p style={{fontSize:8,color:"rgba(245,236,215,0.3)",marginBottom:1}}>{m.id.replace("_","")}</p>
-                    <p style={{fontSize:11,color:pts2===3?"#22c55e":pts2===2?C.gold:!hasPick&&hasResult?"#fca5a5":"rgba(245,236,215,0.5)",fontWeight:700,fontFamily:"'Cinzel',serif"}}>{hasPick?`${pick.h}-${pick.a}`:"—"}</p>
-                    {hasResult&&<p style={{fontSize:8,color:"rgba(245,236,215,0.3)"}}>{r.h}-{r.a}</p>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+      {/* Tabs */}
+      <div style={{display:"flex",padding:"8px 10px",gap:6,borderBottom:"1px solid rgba(201,168,76,0.08)"}}>
+        {[["tabla","📊 Puntos"],["detalle","🎯 Detalle"]].map(([t,l])=>(
+          <button key={t} style={kTab===t?tOn:tOff} onClick={()=>setKTab(t)}>{l}</button>
         ))}
       </div>
 
-      {/* MODAL EDITAR PICKS */}
-      {editingElim&&(
+      {kLoading&&<p style={{color:C2.creamDim,textAlign:"center",padding:30}}>Calculando...</p>}
+
+      {/* ── TABLA RESUMEN ── */}
+      {kTab==="tabla"&&kData&&(
+        <div style={{padding:"10px"}}>
+          <p style={{color:"rgba(245,236,215,0.35)",fontSize:10,textAlign:"center",marginBottom:10}}>2pts ganador · 3pts exacto · Octavos hasta Final</p>
+          {kData.map((p,i)=>(
+            <div key={p.id} style={{background:i===0?"linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.04))":"rgba(92,26,39,0.08)",border:i===0?`1px solid ${C2.gold}`:"1px solid rgba(201,168,76,0.06)",borderRadius:12,padding:"12px 14px",marginBottom:6}}>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:18,minWidth:28,textAlign:"center"}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</span>
+                <div style={{flex:1}}>
+                  <p style={{fontSize:14,fontWeight:700,color:i===0?C2.gold:C2.cream}}>{p.name}</p>
+                  <p style={{fontSize:10,color:"rgba(245,236,215,0.35)",marginTop:2}}>✨{p.exact} exactos · ✅{p.win} ganadores{p.missing?.length>0?` · ⚠️${p.missing.length} sin pronóstico`:""}</p>
+                </div>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontFamily:"'Cinzel',serif",fontSize:24,color:C2.gold,fontWeight:900}}>{p.pts}<span style={{fontSize:10,color:"rgba(245,236,215,0.3)",fontFamily:"'Barlow',sans-serif"}}> pts</span></span>
+                  {isAdmin&&(
+                    <button onClick={async()=>{
+                      const picks=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});
+                      const only={}; ELIM_IDS.forEach(id=>{if(picks[id])only[id]={...picks[id]};});
+                      setEditPks(only); setEditId(p.id);
+                    }} style={{background:"rgba(201,168,76,0.1)",border:`1px solid ${C2.border}`,color:C2.gold,padding:"4px 10px",borderRadius:8,fontSize:11,cursor:"pointer",fontWeight:700}}>✏️</button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── DETALLE POR RONDA ── */}
+      {kTab==="detalle"&&kData&&(
+        <div style={{padding:"10px",overflowX:"auto"}}>
+          {byRound.map(({round,matches})=>matches.length===0?null:(
+            <div key={round} style={{marginBottom:16}}>
+              <p style={{fontFamily:"'Cinzel',serif",color:C2.gold,fontSize:10,letterSpacing:3,marginBottom:8,textAlign:"center"}}>{round.toUpperCase()}</p>
+              {/* Header de partidos */}
+              <div style={{display:"flex",gap:2,marginBottom:4,paddingLeft:100}}>
+                {matches.map(m=>(
+                  <div key={m.id} style={{minWidth:72,textAlign:"center",flexShrink:0}}>
+                    <p style={{fontSize:13,lineHeight:1}}>{FLAGS[m.home]||"🏳️"}{FLAGS[m.away]||"🏳️"}</p>
+                    {results[m.id]?.h!==""&&<p style={{fontSize:8,color:"rgba(245,236,215,0.4)"}}>{results[m.id]?.h}-{results[m.id]?.a}</p>}
+                  </div>
+                ))}
+              </div>
+              {/* Fila por jugador */}
+              {kData.map(p=>(
+                <div key={p.id} style={{display:"flex",alignItems:"center",gap:2,marginBottom:3}}>
+                  <div style={{width:100,flexShrink:0,paddingRight:6}}>
+                    <p style={{fontSize:11,color:p.id===me?.id?"#6B8A52":C2.cream,fontWeight:p.id===me?.id?700:400,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.name}</p>
+                  </div>
+                  {matches.map(m=>{
+                    const pick=p.picks?.[m.id]||{h:"",a:""};
+                    const r=results[m.id];
+                    const pts2=calcMatchPoints(pick,r,m);
+                    const hasPick=pick.h!=="";
+                    const hasResult=r&&r.h!=="";
+                    const bg=!hasPick&&hasResult?"rgba(127,29,29,0.5)":pts2===3?"rgba(34,197,94,0.2)":pts2===2?"rgba(122,75,0,0.25)":hasResult&&hasPick?"rgba(92,26,39,0.4)":"rgba(255,255,255,0.03)";
+                    const bc=!hasPick&&hasResult?"rgba(239,68,68,0.5)":pts2===3?"rgba(34,197,94,0.5)":pts2===2?"rgba(201,168,76,0.4)":"rgba(255,255,255,0.06)";
+                    return(
+                      <div key={m.id} style={{minWidth:72,textAlign:"center",background:bg,border:`1px solid ${bc}`,borderRadius:6,padding:"4px 2px",flexShrink:0}}>
+                        <p style={{fontSize:12,fontFamily:"'Cinzel',serif",fontWeight:700,color:pts2===3?"#22c55e":pts2===2?"#C9A84C":!hasPick&&hasResult?"#fca5a5":"rgba(245,236,215,0.4)"}}>
+                          {hasPick?`${pick.h}-${pick.a}`:"—"}
+                        </p>
+                        {pts2>0&&<p style={{fontSize:8,color:pts2===3?"#22c55e":"#C9A84C"}}>{pts2===3?"✨":"✅"}{pts2}pts</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* MODAL EDITAR */}
+      {editId&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:100,overflowY:"auto"}}>
-          <div style={{background:"#1A0A0E",border:`1px solid ${C.border}`,borderRadius:16,padding:"20px 16px",margin:"20px auto",maxWidth:420}}>
+          <div style={{background:"#1A0A0E",border:`1px solid ${C2.border}`,borderRadius:16,padding:"20px 16px",margin:"20px auto",maxWidth:400}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-              <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:14}}>✏️ {players.find(p=>p.id===editingElim)?.name}</p>
-              <button onClick={()=>setEditingElim(null)} style={{background:"none",border:"none",color:"rgba(245,236,215,0.4)",fontSize:20,cursor:"pointer"}}>✕</button>
+              <p style={{fontFamily:"'Cinzel',serif",color:C2.gold,fontSize:14}}>✏️ {players.find(p=>p.id===editId)?.name}</p>
+              <button onClick={()=>setEditId(null)} style={{background:"none",border:"none",color:"rgba(245,236,215,0.4)",fontSize:20,cursor:"pointer"}}>✕</button>
             </div>
             <div style={{maxHeight:"60vh",overflowY:"auto",display:"flex",flexDirection:"column",gap:6}}>
-              {ELIM_MATCHES_LOCAL.map(m=>{
-                const pick=editElimPicks[m.id]||{h:"",a:""};
+              {ELIM_MATCHES_K.map(m=>{
+                const pick=editPks[m.id]||{h:"",a:""};
                 const r=results[m.id];
                 return(
-                  <div key={m.id} style={{background:"rgba(92,26,39,0.15)",border:`1px solid ${C.border}`,borderRadius:10,padding:"10px"}}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:6,alignItems:"center"}}>
-                      <p style={{fontSize:11,color:C.gold,fontWeight:700}}>{FLAGS[m.home]||"🏳️"} {m.home} vs {m.away} {FLAGS[m.away]||"🏳️"}</p>
-                      {r&&r.h!==""&&<p style={{fontSize:10,color:"rgba(245,236,215,0.4)"}}>Real: {r.h}-{r.a}</p>}
+                  <div key={m.id} style={{background:"rgba(92,26,39,0.15)",border:`1px solid ${C2.border}`,borderRadius:10,padding:"10px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                      <p style={{fontSize:12,color:C2.cream,fontWeight:700}}>{FLAGS[m.home]||"🏳️"} {m.home} <span style={{color:"rgba(245,236,215,0.3)"}}>vs</span> {m.away} {FLAGS[m.away]||"🏳️"}</p>
+                      {r?.h!==""&&<p style={{fontSize:10,color:"rgba(245,236,215,0.4)"}}>Real: {r.h}-{r.a}</p>}
                     </div>
-                    <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center"}}>
-                      <input type="number" min="0" max="20" style={scoreInput} value={pick.h} placeholder="—" onChange={e=>setEditElimPicks(prev=>({...prev,[m.id]:{...pick,h:e.target.value}}))}/>
-                      <span style={{color:"rgba(201,168,76,0.4)",fontSize:18}}>:</span>
-                      <input type="number" min="0" max="20" style={scoreInput} value={pick.a} placeholder="—" onChange={e=>setEditElimPicks(prev=>({...prev,[m.id]:{...pick,a:e.target.value}}))}/>
+                    <div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"center"}}>
+                      <input type="number" min="0" max="20" style={sI} value={pick.h} placeholder="—" onChange={e=>setEditPks(prev=>({...prev,[m.id]:{...pick,h:e.target.value}}))}/>
+                      <span style={{color:"rgba(201,168,76,0.4)",fontSize:20,fontFamily:"'Cinzel',serif"}}>:</span>
+                      <input type="number" min="0" max="20" style={sI} value={pick.a} placeholder="—" onChange={e=>setEditPks(prev=>({...prev,[m.id]:{...pick,a:e.target.value}}))}/>
                     </div>
                   </div>
                 );
               })}
             </div>
             <div style={{display:"flex",gap:8,marginTop:14}}>
-              <button style={{...btnOutline,flex:1}} onClick={()=>setEditingElim(null)}>Cancelar</button>
-              <button style={{...btnGold,flex:1}} onClick={()=>saveElimPicks(editingElim)}>💾 Guardar</button>
+              <button style={{...bO,flex:1}} onClick={()=>setEditId(null)}>Cancelar</button>
+              <button style={{...bG,flex:1}} onClick={()=>savePks(editId)}>💾 Guardar</button>
             </div>
           </div>
         </div>
@@ -759,11 +779,6 @@ export default function App(){
   const [newPlayerName,setNewPlayerName]=useState("");
   const [auditLog,setAuditLog]=useState([]);
   const [manualUnlocks,setManualUnlocks]=useState({});
-  const [knockoutTeams,setKnockoutTeams]=useState({});
-  const [elimData,setElimData]=useState(null);
-  const [elimLoading,setElimLoading]=useState(false);
-  const [editingElim,setEditingElim]=useState(null);
-  const [editElimPicks,setEditElimPicks]=useState({});
   const [standingsTab,setStandingsTab]=useState("general");
   const [auditLoading,setAuditLoading]=useState(false);
   const [editingPlayer,setEditingPlayer]=useState(null);
@@ -810,8 +825,6 @@ export default function App(){
       }
       const mu=await loadData("manualUnlocks");
       if(mu)setManualUnlocks(mu);
-      const kt=await loadData("knockoutTeams");
-      if(kt)setKnockoutTeams(kt);
       setLoading(false);
     }
     init();
@@ -1111,7 +1124,7 @@ export default function App(){
         pts+=calcSpecialPoints(special,adminSpecial);
         let elimPts=0;
         ELIM_IDS.forEach(id=>{const m=ALL_MATCHES.find(x=>x.id===id);if(m)elimPts+=calcMatchPoints(picks[id],results[id],m);});
-        const missingElim=ELIM_IDS.filter(id=>{const r=results[id];const pick=picks[id];return r&&r.h!=""&&(!pick||pick.h=="");});
+        const missingElim=ELIM_IDS.filter(id=>{const r=results[id];const pk=picks[id];return r&&r.h!==""&&(!pk||pk.h==="");});
         return{...p,pts,elimPts,missingElim};
       }));
       setStandings(rows.sort((a,b)=>b.pts-a.pts));
@@ -1186,7 +1199,7 @@ export default function App(){
               <button style={btnOutline} onClick={()=>setScreen("profileH2H")}>👤 Mi perfil & H2H</button>
               <button style={btnOutline} onClick={()=>setScreen("chart")}>📈 Gráfica de posiciones</button>
               <button style={btnOutline} onClick={()=>{loadAllPicks();setScreen("allPicks");}}>🎯 Ver pronósticos de todos</button>
-              <button style={{...btnOutline,borderColor:"rgba(201,168,76,0.5)",color:C.gold,fontWeight:700}} onClick={()=>setScreen("knockout")}>⚡ Octavos → Final</button>
+              <button style={{...btnOutline,borderColor:"rgba(201,168,76,0.5)",color:C.gold,fontWeight:700}} onClick={()=>setScreen("knockout")}>⚡ 8vos → Final</button>
               <button style={{...btnOutline,position:"relative"}} onClick={()=>{markChatRead();setScreen("chat");}}>
                 💬 Chat del grupo
                 {chatUnread>0&&<span style={{position:"absolute",top:-6,right:-6,background:"#ef4444",color:"#fff",borderRadius:"50%",width:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{chatUnread}</span>}
@@ -1269,8 +1282,7 @@ export default function App(){
     const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
     const roundLocked=isRoundLocked(activeRound);
     const roundAvail=isRoundAvailable(activeRound);
-    const effectiveMatches=getEffectiveMatches(knockoutTeams);
-    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:effectiveMatches.filter(m=>m.round===activeRound);
+    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
         <div style={topBar}>
@@ -1338,9 +1350,7 @@ export default function App(){
                     {result&&result.h!==""&&(
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8,paddingTop:7,borderTop:`1px solid rgba(201,168,76,0.1)`}}>
                         <span style={{color:"rgba(245,236,215,0.3)",fontSize:10}}>Real: {result.h}-{result.a}</span>
-                        <span style={{fontSize:10,fontWeight:700,padding:"2px 9px",borderRadius:10,color:C.cream,background:pts===3?C.olive:pts===2?"#7A4B00":pick.h===""?"#374151":"#5C1A27"}}>
-                          {pick.h===""?"⚠️ Sin pronóstico":pts===3?"✨ Exacto":pts===2?"✅ Ganador":"❌ Fallo"} · {pick.h===""?"0":pts}pts
-                        </span>
+                        <span style={{fontSize:10,fontWeight:700,padding:"2px 9px",borderRadius:10,color:C.cream,background:pts===3?C.olive:pts===2?"#7A4B00":"#5C1A27"}}>{pts===3?"✨ Exacto":pts===2?"✅ Ganador":"❌ Fallo"} · {pts}pts</span>
                       </div>
                     )}
                   </div>
@@ -1360,7 +1370,7 @@ export default function App(){
   // ── STANDINGS ─────────────────────────────────────────────────────────────
   if(screen==="knockout")return(
     <KnockoutScreen players={players} results={results} me={me} myPicks={myPicks}
-      loadData={loadData} showToast={showToast} setScreen={setScreen} ADMIN_PASSWORD={ADMIN_PASSWORD}/>
+      loadData={loadData} showToast={showToast} setScreen={setScreen}/>
   );
 
   if(screen==="standings")return(
@@ -1377,9 +1387,8 @@ export default function App(){
         <span style={{color:C.creamDim,fontSize:12}}>💰 Pozo total</span>
         <span style={{fontFamily:"'Cinzel',serif",fontSize:24,color:C.gold,fontWeight:900}}>${pozo}</span>
       </div>
-      {/* Tabs */}
       <div style={{display:"flex",padding:"6px 10px",gap:6,borderBottom:`1px solid rgba(201,168,76,0.08)`}}>
-        {[["general","🌍 General"],["elim","⚡ Octavos→Final"]].map(([t,l])=>(
+        {[["general","🌍 General"],["elim","⚡ 8vos→Final"]].map(([t,l])=>(
           <button key={t} style={standingsTab===t?tabOn:tabOff} onClick={()=>setStandingsTab(t)}>{l}</button>
         ))}
       </div>
@@ -1403,13 +1412,13 @@ export default function App(){
             <span style={{fontSize:16,minWidth:28,textAlign:"center"}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</span>
             <div style={{flex:1}}>
               <p style={{fontSize:14,fontWeight:700,color:i===0?C.gold:p.id===me?.id?C.oliveLt:C.cream}}>{p.name}{p.id===me?.id&&<span style={{fontSize:9,color:"rgba(245,236,215,0.2)",marginLeft:6}}>← tú</span>}</p>
-              {p.missingElim?.length>0&&<p style={{fontSize:9,color:"#fca5a5",marginTop:2}}>⚠️ Sin pronóstico: {p.missingElim.join(" · ")}</p>}
+              {p.missingElim?.length>0&&<p style={{fontSize:9,color:"#fca5a5",marginTop:2}}>⚠️ Sin pronóstico: {p.missingElim.map(id=>{const m=ALL_MATCHES.find(x=>x.id===id);return m?`${FLAGS[m.home]||""}${FLAGS[m.away]||""}`:id;}).join(" · ")}</p>}
             </div>
             <span style={{fontFamily:"'Cinzel',serif",fontSize:20,color:C.gold}}>{p.elimPts||0}<span style={{fontSize:10,color:"rgba(245,236,215,0.3)",fontFamily:"'Barlow',sans-serif"}}> pts</span></span>
           </div>
         ))}
         <div style={{marginTop:12,padding:"10px 14px",background:`rgba(201,168,76,0.03)`,border:`1px solid ${C.border}`,borderRadius:10}}>
-          <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center"}}>{standingsTab==="general"?"2pts ganador · 3pts exacto · 10pts campeón · 8pts goleador":"Octavos → Final · ⚠️ = sin pronóstico en partido jugado"}</p>
+          <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center"}}>{standingsTab==="general"?"2pts ganador · 3pts exacto · 10pts campeón · 8pts goleador":"8vos → Final · ⚠️ = partido jugado sin pronóstico"}</p>
         </div>
       </div>
       {me&&<div style={{padding:"0 10px",display:"flex",flexDirection:"column",gap:8}}>
@@ -2227,8 +2236,7 @@ export default function App(){
   // ── ALL PICKS SCREEN ──────────────────────────────────────────────────────
   if(screen==="allPicks"){
     const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
-    const effectiveMatches=getEffectiveMatches(knockoutTeams);
-    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:effectiveMatches.filter(m=>m.round===activeRound);
+    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
         <div style={topBar}>
@@ -2303,8 +2311,7 @@ export default function App(){
   // ── ADMIN ─────────────────────────────────────────────────────────────────
   if(screen==="admin"){
     const rounds=["Especiales","Grupos","Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
-    const effectiveMatches=getEffectiveMatches(knockoutTeams);
-    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:effectiveMatches.filter(m=>m.round===activeRound);
+    const matchesInRound=activeRound==="Grupos"?GROUP_MATCHES.filter(m=>m.group===activeGroup):activeRound==="Especiales"?[]:ALL_MATCHES.filter(m=>m.round===activeRound);
     return(
       <div style={{...pageRoot,paddingBottom:60}}><GF/>{toast&&<Toast data={toast}/>}
         {/* EDIT PLAYER PICKS MODAL */}
