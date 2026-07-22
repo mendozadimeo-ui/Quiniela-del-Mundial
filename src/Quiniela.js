@@ -362,7 +362,6 @@ const MD={
   K6:new Date("2026-06-27T23:30:00Z"),// RD Congo vs Uzbekistán 19:30ET Jun27
   L5:new Date("2026-06-27T21:00:00Z"),// Panamá vs Inglaterra 17:00ET Jun27
   L6:new Date("2026-06-27T21:00:00Z"),// Croacia vs Ghana 17:00ET Jun27
-  // Ronda de 32
   R32_1:new Date("2026-06-28T17:00:00Z"),R32_2:new Date("2026-06-29T17:00:00Z"),
   R32_3:new Date("2026-06-29T21:00:00Z"),R32_4:new Date("2026-06-30T01:00:00Z"),
   R32_5:new Date("2026-06-30T17:00:00Z"),R32_6:new Date("2026-06-30T21:00:00Z"),
@@ -371,16 +370,12 @@ const MD={
   R32_11:new Date("2026-07-02T17:00:00Z"),R32_12:new Date("2026-07-02T21:00:00Z"),
   R32_13:new Date("2026-07-03T17:00:00Z"),R32_14:new Date("2026-07-03T21:00:00Z"),
   R32_15:new Date("2026-07-04T01:00:00Z"),R32_16:new Date("2026-07-04T05:30:00Z"),
-  // Octavos
   QF_1:new Date("2026-07-04T17:00:00Z"),QF_2:new Date("2026-07-04T21:00:00Z"),
   QF_3:new Date("2026-07-05T20:00:00Z"),QF_4:new Date("2026-07-06T01:00:00Z"),
   QF_5:new Date("2026-07-06T19:00:00Z"),QF_6:new Date("2026-07-07T00:00:00Z"),
   QF_7:new Date("2026-07-07T16:00:00Z"),QF_8:new Date("2026-07-07T20:00:00Z"),
-  // Cuartos
-  CF_1:new Date("2026-07-09T20:00:00Z"),  // Jul 9  4pm ET — Francia vs Marruecos
-  CF_2:new Date("2026-07-10T19:00:00Z"),  // Jul 10 3pm ET — España vs Bélgica
-  CF_3:new Date("2026-07-11T21:00:00Z"),  // Jul 11 5pm ET — Noruega vs Inglaterra
-  CF_4:new Date("2026-07-12T01:00:00Z"),  // Jul 11 9pm ET — Argentina vs Suiza
+  CF_1:new Date("2026-07-09T20:00:00Z"),CF_2:new Date("2026-07-10T19:00:00Z"),
+  CF_3:new Date("2026-07-11T21:00:00Z"),CF_4:new Date("2026-07-12T01:00:00Z"),
   SF_1:new Date("2026-07-14T19:00:00Z"),SF_2:new Date("2026-07-15T19:00:00Z"),
   THIRD:new Date("2026-07-18T21:00:00Z"),
   FINAL:new Date("2026-07-19T19:00:00Z"),
@@ -543,24 +538,18 @@ const KNOCKOUT_MATCHES=[
   {id:"CF_2",round:"Cuartos",home:"España",away:"Bélgica"},
   {id:"CF_3",round:"Cuartos",home:"Noruega",away:"Inglaterra"},
   {id:"CF_4",round:"Cuartos",home:"Argentina",away:"Suiza"},
-  // ── SEMIFINALES — editables ───────────────────────────────────────────
-  {id:"SF_1",round:"Semifinal",home:"Por definir",away:"Por definir"},
-  {id:"SF_2",round:"Semifinal",home:"Por definir",away:"Por definir"},
-  {id:"THIRD",round:"Tercer Lugar",home:"Por definir",away:"Por definir"},
-  {id:"FINAL",round:"Final",home:"Por definir",away:"Por definir"},
+  // ── SEMIFINALES ───────────────────────────────────────────────────────
+  {id:"SF_1",round:"Semifinal",home:"Francia",away:"España"},
+  {id:"SF_2",round:"Semifinal",home:"Inglaterra",away:"Argentina"},
+  // ── TERCER LUGAR & FINAL ──────────────────────────────────────────────
+  {id:"THIRD",round:"Tercer Lugar",home:"Francia",away:"Inglaterra"},
+  {id:"FINAL",round:"Final",home:"España",away:"Argentina"},
 ];
 const ALL_MATCHES=[...GROUP_MATCHES,...KNOCKOUT_MATCHES];
-// Equipos clasificados a cada ronda — se actualiza manualmente
-const QUARTER_TEAMS=["Francia","Marruecos","España","Bélgica","Noruega","Inglaterra","Argentina","Suiza"];
-const SEMI_TEAMS=[]; // se llenará cuando terminen cuartos
-function teamsForRound(round){
-  if(round==="Semifinal"||round==="Tercer Lugar"||round==="Final") return SEMI_TEAMS.length?SEMI_TEAMS:QUARTER_TEAMS;
-  return ALL_TEAMS;
-}
+const KNOCKOUT_ROUNDS=["Ronda de 32","Octavos","Cuartos","Semifinal","Tercer Lugar","Final"];
+const KNOCKOUT_IDS=["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8","QF_7","QF_8","CF_1","CF_2","CF_3","CF_4","SF_1","SF_2","THIRD","FINAL"];
 function getEffectiveMatches(kt){
-  const ED=["Semifinal","Tercer Lugar","Final"];
   return ALL_MATCHES.map(m=>{
-    if(!ED.includes(m.round))return m;
     const k=kt?.[m.id];
     if(!k)return m;
     return {...m,home:k.home||m.home,away:k.away||m.away};
@@ -632,6 +621,7 @@ export default function App(){
   const [auditLog,setAuditLog]=useState([]);
   const [manualUnlocks,setManualUnlocks]=useState({});
   const [knockoutTeams,setKnockoutTeams]=useState({});
+  const [knockoutScreen,setKnockoutScreen]=useState(false);
   const [auditLoading,setAuditLoading]=useState(false);
   const [editingPlayer,setEditingPlayer]=useState(null);
   const [editPicks,setEditPicks]=useState({});
@@ -1050,6 +1040,7 @@ export default function App(){
               <button style={btnOutline} onClick={()=>setScreen("profileH2H")}>👤 Mi perfil & H2H</button>
               <button style={btnOutline} onClick={()=>setScreen("chart")}>📈 Gráfica de posiciones</button>
               <button style={btnOutline} onClick={()=>{loadAllPicks();setScreen("allPicks");}}>🎯 Ver pronósticos de todos</button>
+              <button style={{...btnOutline,borderColor:"rgba(201,168,76,0.4)",color:C.gold}} onClick={()=>setScreen("knockout")}>⚡ Puntos Eliminatorios</button>
               <button style={{...btnOutline,position:"relative"}} onClick={()=>{markChatRead();setScreen("chat");}}>
                 💬 Chat del grupo
                 {chatUnread>0&&<span style={{position:"absolute",top:-6,right:-6,background:"#ef4444",color:"#fff",borderRadius:"50%",width:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{chatUnread}</span>}
@@ -1219,7 +1210,154 @@ export default function App(){
   }
 
   // ── STANDINGS ─────────────────────────────────────────────────────────────
-  if(screen==="standings")return(
+  // ── PANTALLA PUNTOS ELIMINATORIOS ───────────────────────────────────────
+if(screen==="knockout"){
+  const ELIM_IDS=["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8","QF_7","QF_8",
+    "CF_1","CF_2","CF_3","CF_4","SF_1","SF_2","THIRD","FINAL"];
+  const ELIM_MATCHES=ALL_MATCHES.filter(m=>ELIM_IDS.includes(m.id));
+  const [elimData,setElimData]=useState(null);
+  const [elimLoading,setElimLoading]=useState(false);
+  const [editingElim,setEditingElim]=useState(null); // playerId siendo editado
+  const [editElimPicks,setEditElimPicks]=useState({});
+
+  // Calcular standings eliminatorios
+  async function loadElimData(){
+    setElimLoading(true);
+    const rows=await Promise.all(players.map(async p=>{
+      const picks=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});
+      let pts=0,exact=0,winner=0;
+      ELIM_MATCHES.forEach(m=>{
+        const r=results[m.id];
+        const pick=picks[m.id];
+        const p2=calcMatchPoints(pick,r,m);
+        pts+=p2;
+        if(p2===3)exact++;
+        else if(p2===2)winner++;
+      });
+      return{...p,pts,exact,winner,picks};
+    }));
+    setElimData(rows.sort((a,b)=>b.pts-a.pts));
+    setElimLoading(false);
+  }
+
+  // Guardar picks eliminatorios de un jugador (admin)
+  async function saveElimPicks(playerId){
+    const prev=playerId===me?.id?myPicks:(await loadData(`picks_${playerId}`)||{});
+    const merged={...prev,...editElimPicks};
+    await saveData(`picks_${playerId}`,merged);
+    if(playerId===me?.id)setMyPicks(merged);
+    showToast("✅ Pronósticos guardados");
+    setEditingElim(null);
+    setElimData(null); // forzar recarga
+    loadElimData();
+  }
+
+  if(!elimData&&!elimLoading)loadElimData();
+
+  return(
+    <div style={{...pageRoot,paddingBottom:40}}><GF/>{toast&&<Toast data={toast}/>}
+      <div style={topBar}>
+        <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
+        <p style={{fontFamily:"'Cinzel',serif",fontSize:12,color:C.gold,letterSpacing:2}}>⚡ PUNTOS ELIMINATORIOS</p>
+        <button style={saveBtnStyle} onClick={loadElimData}>🔄</button>
+      </div>
+
+      {/* TABLA RANKING */}
+      <div style={{padding:"10px"}}>
+        <div style={{padding:"8px 12px",background:"rgba(201,168,76,0.06)",border:`1px solid ${C.border}`,borderRadius:10,marginBottom:12}}>
+          <p style={{color:"rgba(245,236,215,0.4)",fontSize:10,textAlign:"center"}}>Puntos de Octavos → Final · 2pts ganador · 3pts exacto</p>
+        </div>
+
+        {elimLoading&&<p style={{color:C.creamDim,textAlign:"center",padding:30}}>Calculando...</p>}
+
+        {elimData&&elimData.map((p,i)=>(
+          <div key={p.id} style={{background:i===0?"linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.04))":"rgba(92,26,39,0.08)",border:i===0?`1px solid ${C.gold}`:`1px solid rgba(201,168,76,0.06)`,borderRadius:12,padding:"10px 12px",marginBottom:6}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:18,minWidth:28,textAlign:"center"}}>{i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`}</span>
+              <div style={{flex:1}}>
+                <p style={{fontSize:14,fontWeight:700,color:i===0?C.gold:C.cream}}>{p.name}</p>
+                <p style={{fontSize:10,color:"rgba(245,236,215,0.35)",marginTop:2}}>✨ {p.exact} exactos · ✅ {p.winner} ganadores</p>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontFamily:"'Cinzel',serif",fontSize:22,color:C.gold,fontWeight:900}}>{p.pts}<span style={{fontSize:10,color:"rgba(245,236,215,0.3)",fontFamily:"'Barlow',sans-serif"}}> pts</span></span>
+                {me?.pass===ADMIN_PASSWORD&&(
+                  <button onClick={async()=>{
+                    const picks=p.id===me?.id?myPicks:(await loadData(`picks_${p.id}`)||{});
+                    const elimOnly={};
+                    ELIM_IDS.forEach(id=>{if(picks[id])elimOnly[id]=picks[id];});
+                    setEditElimPicks(elimOnly);
+                    setEditingElim(p.id);
+                  }} style={{background:"rgba(201,168,76,0.1)",border:`1px solid ${C.border}`,color:C.gold,padding:"4px 10px",borderRadius:8,fontSize:11,cursor:"pointer",fontFamily:"'Barlow',sans-serif",fontWeight:700}}>✏️</button>
+                )}
+              </div>
+            </div>
+
+            {/* Detalle de picks por partido */}
+            <div style={{marginTop:8,display:"flex",flexWrap:"wrap",gap:4}}>
+              {ELIM_MATCHES.map(m=>{
+                const pick=p.picks?.[m.id]||{h:"",a:""};
+                const r=results[m.id];
+                const pts2=calcMatchPoints(pick,r,m);
+                const hasPick=pick.h!=="";
+                const hasResult=r&&r.h!=="";
+                return(
+                  <div key={m.id} style={{background:!hasPick?"rgba(255,255,255,0.03)":!hasResult?"rgba(201,168,76,0.08)":pts2===3?"rgba(34,197,94,0.15)":pts2===2?"rgba(122,75,0,0.2)":"rgba(92,26,39,0.3)",border:`1px solid ${!hasPick?"rgba(255,255,255,0.05)":!hasResult?"rgba(201,168,76,0.2)":pts2===3?"rgba(34,197,94,0.4)":pts2===2?"rgba(201,168,76,0.3)":"rgba(92,26,39,0.5)"}`,borderRadius:6,padding:"3px 6px",minWidth:60,textAlign:"center"}}>
+                    <p style={{fontSize:8,color:"rgba(245,236,215,0.3)",marginBottom:1}}>{m.id.replace("_","")}</p>
+                    <p style={{fontSize:11,color:pts2===3?"#22c55e":pts2===2?C.gold:hasPick?"rgba(245,236,215,0.5)":"rgba(245,236,215,0.15)",fontWeight:700,fontFamily:"'Cinzel',serif"}}>{hasPick?`${pick.h}-${pick.a}`:"—"}</p>
+                    {hasResult&&<p style={{fontSize:8,color:"rgba(245,236,215,0.3)"}}>{r.h}-{r.a}</p>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* MODAL EDITAR PICKS ELIMINATORIOS */}
+      {editingElim&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.92)",zIndex:100,overflowY:"auto"}}>
+          <div style={{background:"#1A0A0E",border:`1px solid ${C.border}`,borderRadius:16,padding:"20px 16px",margin:"20px auto",maxWidth:420}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:14}}>✏️ {players.find(p=>p.id===editingElim)?.name}</p>
+              <button onClick={()=>setEditingElim(null)} style={{background:"none",border:"none",color:"rgba(245,236,215,0.4)",fontSize:20,cursor:"pointer"}}>✕</button>
+            </div>
+            <div style={{maxHeight:"60vh",overflowY:"auto",display:"flex",flexDirection:"column",gap:8}}>
+              {ELIM_MATCHES.map(m=>{
+                const pick=editElimPicks[m.id]||{h:"",a:""};
+                const r=results[m.id];
+                return(
+                  <div key={m.id} style={{background:"rgba(92,26,39,0.15)",border:`1px solid ${C.border}`,borderRadius:10,padding:"10px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                      <p style={{fontSize:10,color:C.gold,fontWeight:700}}>{m.id}</p>
+                      {r&&r.h!==""&&<p style={{fontSize:10,color:"rgba(245,236,215,0.4)"}}>Real: {r.h}-{r.a}</p>}
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <div style={{flex:1}}>
+                        <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginBottom:2}}>{FLAGS[m.home]||"🏳️"} {m.home}</p>
+                        <input type="number" min="0" max="20" style={{...scoreInput,width:"100%",background:"rgba(201,168,76,0.08)"}} value={pick.h} onChange={e=>setEditElimPicks(p=>({...p,[m.id]:{...pick,h:e.target.value}}))}/>
+                      </div>
+                      <span style={{color:C.border,fontSize:18,fontFamily:"'Cinzel',serif"}}>:</span>
+                      <div style={{flex:1}}>
+                        <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginBottom:2}}>{FLAGS[m.away]||"🏳️"} {m.away}</p>
+                        <input type="number" min="0" max="20" style={{...scoreInput,width:"100%",background:"rgba(201,168,76,0.08)"}} value={pick.a} onChange={e=>setEditElimPicks(p=>({...p,[m.id]:{...pick,a:e.target.value}}))}/>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{display:"flex",gap:8,marginTop:14}}>
+              <button style={{...btnOutline,flex:1}} onClick={()=>setEditingElim(null)}>Cancelar</button>
+              <button style={{...btnGold,flex:1}} onClick={()=>saveElimPicks(editingElim)}>💾 Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+if(screen==="standings")return(
     <div style={{...pageRoot,paddingBottom:80}}><GF/>{toast&&<Toast data={toast}/>}
       <div style={topBar}>
         <button style={backBtn} onClick={()=>setScreen("home")}>← Inicio</button>
@@ -2255,7 +2393,7 @@ export default function App(){
           }}>🔄 Sync</button>
         </div>
         <div style={{display:"flex",padding:"8px 10px",gap:6,borderBottom:`1px solid rgba(201,168,76,0.08)`}}>
-          {[["resultados","⚽ Resultados"],["jugadores","👥 Jugadores"],["grupos","📊 Grupos"],["equipos","🏅 Equipos"]].map(([t,l])=>(<button key={t} style={adminTab===t?tabOn:tabOff} onClick={()=>setAdminTab(t)}>{l}</button>))}
+          {[["resultados","⚽ Resultados"],["jugadores","👥 Jugadores"],["grupos","📊 Grupos"]].map(([t,l])=>(<button key={t} style={adminTab===t?tabOn:tabOff} onClick={()=>setAdminTab(t)}>{l}</button>))}
         </div>
 
         {adminTab==="resultados"&&(
@@ -2393,76 +2531,6 @@ export default function App(){
                 </div>
               );
             })}
-          </div>
-        )}
-
-        {adminTab==="equipos"&&(
-          <div style={{padding:"10px"}}>
-            <p style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:12,letterSpacing:1,marginBottom:4}}>🏅 EQUIPOS SEMIFINALES & FINAL</p>
-            <p style={{color:"rgba(245,236,215,0.3)",fontSize:11,marginBottom:6}}>Solo equipos clasificados a cuartos disponibles como opciones.</p>
-            <div style={{padding:"8px 10px",background:"rgba(201,168,76,0.06)",border:`1px solid ${C.border}`,borderRadius:10,marginBottom:14}}>
-              <p style={{fontSize:10,color:"rgba(245,236,215,0.4)",letterSpacing:1,marginBottom:6}}>🏆 CLASIFICADOS A CUARTOS</p>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{QUARTER_TEAMS.map(t=>(<span key={t} style={{background:"rgba(201,168,76,0.12)",border:`1px solid ${C.border}`,borderRadius:20,padding:"3px 10px",fontSize:11,color:C.cream}}>{FLAGS[t]||"🏳️"} {t}</span>))}</div>
-            </div>
-            {[
-              {label:"🔴 SEMIFINALES",ids:["SF_1","SF_2"]},
-              {label:"🏆 FINAL & 3ER LUGAR",ids:["FINAL","THIRD"]},
-            ].map(({label,ids})=>(
-              <div key={label} style={{marginBottom:16,background:"rgba(92,26,39,0.1)",border:`1px solid ${C.border}`,borderRadius:13,overflow:"hidden"}}>
-                <div style={{background:"rgba(201,168,76,0.12)",padding:"8px 12px",borderBottom:`1px solid ${C.border}`}}>
-                  <p style={{fontFamily:"'Cinzel',serif",color:C.gold,fontSize:11,letterSpacing:2}}>{label}</p>
-                </div>
-                {ids.map(id=>{
-                  const cur=knockoutTeams[id]||{home:"",away:""};
-                  const isLocked=isMatchLocked(id,manualUnlocks);
-                  const saveField=async(field,val)=>{
-                    const updated={...knockoutTeams,[id]:{...cur,[field]:val}};
-                    setKnockoutTeams(updated);
-                    await saveData("knockoutTeams",updated);
-                    showToast(`✅ ${id} guardado`);
-                  };
-                  return(
-                    <div key={id} style={{padding:"10px 12px",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                        <p style={{fontSize:10,color:"rgba(245,236,215,0.4)",letterSpacing:1,textTransform:"uppercase"}}>{id.replace("_"," ")}</p>
-                        <button onClick={async()=>{
-                          const newVal=isLocked?"open":"closed";
-                          const updated={...manualUnlocks,[id]:newVal};
-                          setManualUnlocks(updated);await saveData("manualUnlocks",updated);
-                          showToast(newVal==="open"?"🔓 Abierto":"🔒 Cerrado");
-                        }} style={{background:isLocked?"rgba(34,197,94,0.12)":"rgba(239,68,68,0.12)",border:`1px solid ${isLocked?"rgba(34,197,94,0.3)":"rgba(239,68,68,0.3)"}`,color:isLocked?"#22c55e":"#fca5a5",padding:"4px 10px",borderRadius:8,fontSize:11,cursor:"pointer",fontFamily:"'Barlow',sans-serif",fontWeight:700}}>
-                          {isLocked?"🔓 Abrir":"🔒 Cerrar"}
-                        </button>
-                      </div>
-                      <div style={{display:"flex",alignItems:"center",gap:8}}>
-                        <div style={{flex:1}}>
-                          <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginBottom:3}}>LOCAL</p>
-                          <select style={{width:"100%",background:"rgba(26,10,14,0.8)",border:`1px solid ${cur.home?C.gold:C.border}`,color:cur.home?C.cream:"rgba(245,236,215,0.4)",padding:"7px 8px",borderRadius:8,fontSize:12,fontFamily:"'Barlow',sans-serif"}}
-                            value={cur.home||""} onChange={e=>saveField("home",e.target.value)}>
-                            <option value="">— Sin definir —</option>
-                            {QUARTER_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
-                          </select>
-                        </div>
-                        <span style={{color:C.gold,fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700}}>VS</span>
-                        <div style={{flex:1}}>
-                          <p style={{fontSize:9,color:"rgba(245,236,215,0.3)",marginBottom:3}}>VISITANTE</p>
-                          <select style={{width:"100%",background:"rgba(26,10,14,0.8)",border:`1px solid ${cur.away?C.gold:C.border}`,color:cur.away?C.cream:"rgba(245,236,215,0.4)",padding:"7px 8px",borderRadius:8,fontSize:12,fontFamily:"'Barlow',sans-serif"}}
-                            value={cur.away||""} onChange={e=>saveField("away",e.target.value)}>
-                            <option value="">— Sin definir —</option>
-                            {QUARTER_TEAMS.map(t=><option key={t} value={t}>{FLAGS[t]||"🏳️"} {t}</option>)}
-                          </select>
-                        </div>
-                      </div>
-                      {cur.home&&cur.away&&(
-                        <div style={{marginTop:8,padding:"5px 10px",background:"rgba(74,94,58,0.15)",border:"1px solid rgba(74,94,58,0.3)",borderRadius:8,textAlign:"center"}}>
-                          <p style={{fontSize:12,color:"#6B8A52",fontWeight:700}}>{FLAGS[cur.home]||"🏳️"} {cur.home} vs {cur.away} {FLAGS[cur.away]||"🏳️"}</p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
           </div>
         )}
 
