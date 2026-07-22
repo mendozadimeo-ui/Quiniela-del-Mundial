@@ -541,7 +541,8 @@ const KNOCKOUT_MATCHES=[
   {id:"FINAL",round:"Final",home:"España",away:"Argentina"},
 ];
 const ALL_MATCHES=[...GROUP_MATCHES,...KNOCKOUT_MATCHES];
-const ELIM_IDS=["QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8","QF_7","QF_8","CF_1","CF_2","CF_3","CF_4","SF_1","SF_2","THIRD","FINAL"];
+// IDs de todas las rondas eliminatorias (Ronda de 32 en adelante)
+const ELIM_IDS=["R32_1","R32_2","R32_3","R32_4","R32_5","R32_6","R32_7","R32_8","R32_9","R32_10","R32_11","R32_12","R32_13","R32_14","R32_15","R32_16","QF_1","QF_2","QF_3","QF_4","QF_5","QF_6","QF_7","QF_8","CF_1","CF_2","CF_3","CF_4","SF_1","SF_2","THIRD","FINAL"];
 
 function calcMatchPoints(pred,result,match){
   if(!result||result.h===""||result.a==="")return 0;
@@ -612,7 +613,7 @@ function KnockoutScreen({players,results,me,myPicks,loadData,showToast,setScreen
     <div style={{minHeight:"100vh",background:"radial-gradient(ellipse at top,#3D0F18 0%,#1A0A0E 55%)",fontFamily:"'Barlow',sans-serif",color:"#F5ECD7",paddingBottom:40}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",background:"rgba(26,10,14,0.88)",borderBottom:"1px solid rgba(201,168,76,0.25)",position:"sticky",top:0,zIndex:10,backdropFilter:"blur(20px)"}}>
         <button style={{background:"none",border:"none",color:"rgba(245,236,215,0.3)",cursor:"pointer",fontSize:13,fontFamily:"'Barlow',sans-serif"}} onClick={()=>setScreen("home")}>← Inicio</button>
-        <p style={{fontFamily:"'Cinzel',serif",fontSize:12,color:C2.gold,letterSpacing:2}}>⚡ 8VOS → FINAL</p>
+        <p style={{fontFamily:"'Cinzel',serif",fontSize:12,color:C2.gold,letterSpacing:2}}>⚡ ELIMINATORIOS</p>
         <button style={{background:"rgba(201,168,76,0.1)",border:"1px solid rgba(201,168,76,0.25)",color:C2.gold,padding:"6px 12px",borderRadius:8,fontSize:12,cursor:"pointer",fontWeight:700}} onClick={()=>{setKData(null);load();}}>🔄</button>
       </div>
 
@@ -1147,7 +1148,7 @@ export default function App(){
               <button style={btnOutline} onClick={()=>setScreen("standings")}>🏆 Tabla de participantes</button>
               <button style={btnOutline} onClick={()=>setScreen("groupBracket")}>🏟️ Grupos & Bracket</button>
               <button style={btnOutline} onClick={()=>{loadAllPicks();setScreen("allPicks");}}>🎯 Ver pronósticos de todos</button>
-              <button style={{...btnOutline,borderColor:"rgba(201,168,76,0.5)",color:C.gold,fontWeight:700}} onClick={()=>setScreen("knockout")}>⚡ 8vos → Final</button>
+              <button style={{...btnOutline,borderColor:"rgba(201,168,76,0.5)",color:C.gold,fontWeight:700}} onClick={()=>setScreen("knockout")}>⚡ Eliminatorios</button>
               <button style={{...btnOutline,position:"relative"}} onClick={()=>{markChatRead();setScreen("chat");}}>
                 💬 Chat del grupo
                 {chatUnread>0&&<span style={{position:"absolute",top:-6,right:-6,background:"#ef4444",color:"#fff",borderRadius:"50%",width:18,height:18,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{chatUnread}</span>}
@@ -1336,7 +1337,7 @@ export default function App(){
         <span style={{fontFamily:"'Cinzel',serif",fontSize:24,color:C.gold,fontWeight:900}}>${pozo}</span>
       </div>
       <div style={{display:"flex",padding:"6px 10px",gap:6,borderBottom:`1px solid rgba(201,168,76,0.08)`}}>
-        {[["general","🌍 General"],["elim","⚡ 8vos→Final"]].map(([t,l])=>(
+        {[["general","🌍 General"],["elim","⚡ Eliminatorios"]].map(([t,l])=>(
           <button key={t} style={standingsTab===t?tabOn:tabOff} onClick={()=>setStandingsTab(t)}>{l}</button>
         ))}
       </div>
@@ -1366,7 +1367,7 @@ export default function App(){
           </div>
         ))}
         <div style={{marginTop:12,padding:"10px 14px",background:`rgba(201,168,76,0.03)`,border:`1px solid ${C.border}`,borderRadius:10}}>
-          <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center"}}>{standingsTab==="general"?"2pts ganador · 3pts exacto · 10pts campeón · 8pts goleador":"8vos → Final · ⚠️ = partido jugado sin pronóstico"}</p>
+          <p style={{color:"rgba(245,236,215,0.2)",fontSize:10,textAlign:"center"}}>{standingsTab==="general"?"2pts ganador · 3pts exacto · 10pts campeón · 8pts goleador":"Ronda de 32 → Final · ⚠️ = partido jugado sin pronóstico"}</p>
         </div>
       </div>
       {me&&<div style={{padding:"0 10px",display:"flex",flexDirection:"column",gap:8}}>
